@@ -1,5 +1,22 @@
+@import "normalize";
+@import "modelList";
+@import "modelEditor";
+
 $color: #262828;
 
 body {
   color: $color;
+  font-family: "Roboto", "Helvetica", "Arial", sans-serif;
+  
+  *{ box-sizing: border-box; }
+}
+
+
+.iconSmall{
+  font-size: 20px;
+}
+
+section{
+  padding: 20px;
+  height: 100vh;
 }

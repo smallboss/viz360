@@ -4,6 +4,10 @@
   "description": "Minimalistic ES6 React boilerplate",
   "main": "index.js",
   "scripts": {
+    "server": "node --experimental-modules ./server/main.mjs",
+    "db": "mongod",
+    "backend": "mongod & node --experimental-modules ./server/main.mjs",
+    "start_do": "node --experimental-modules ./server/main.mjs & webpack-dev-server",
     "start": "webpack-dev-server",
     "clean": "rimraf dist",
     "production": "cross-env npm run clean && webpack --config webpack.production.config.js --progress --profile --colors",
@@ -38,11 +42,29 @@
     }
   },
   "dependencies": {
+    "@material-ui/core": "^3.3.0",
+    "@material-ui/icons": "^3.0.1",
+    "@material-ui/lab": "^3.0.0-alpha.21",
+    "bluebird": "^3.5.2",
+    "body-parser": "^1.18.3",
+    "cors": "^2.8.4",
     "cross-env": "5.2.0",
+    "express": "^4.16.4",
+    "express-fileupload": "^1.0.0",
+    "fs": "0.0.1-security",
+    "keymirror": "^0.1.1",
+    "mongoose": "^5.3.4",
+    "path": "^0.12.7",
     "react": "16.5.2",
     "react-dom": "16.5.2",
+    "react-dropzone": "^6.2.4",
     "react-hot-loader": "4.3.11",
-    "react-router-dom": "4.3.0"
+    "react-redux": "^5.0.7",
+    "react-router-dom": "^4.3.0",
+    "redux": "^4.0.1",
+    "redux-devtools-extension": "^2.13.5",
+    "three": "^0.97.0",
+    "until": "^0.1.1"
   },
   "devDependencies": {
     "@babel/cli": "7.1.1",

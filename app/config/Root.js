@@ -7,6 +7,7 @@ const Root = () => {
     <Router>
       <Switch>
         <Route path="/" component={App} exact />
+        <Route path="/:id" component={App} exact />
       </Switch>
     </Router>
   );
