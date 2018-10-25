@@ -93,6 +93,25 @@ class Viewer {
         this.scene.add(mesh);
     }
 
+    removeLight( light ) {
+        const lightHelper = this.groupLightHelpers.children.find( el => el.light && el.light.uuid==light.uuid );
+
+        console.log('lightHelper', lightHelper);
+
+        this.groupLightHelpers.remove( lightHelper );
+        this.model.remove( light );
+    }
+
+    getObjectByUuid( uuid ) {
+        let object = null;
+
+        this.scene.traverse( el => {
+            if(el.uuid==uuid) object = el;
+        });
+
+        return object;
+    }
+
     addLightHelper( light, name ) {
         const lightHelper = new THREE.PointLightHelper(light, 5);
         if(lightHelper) lightHelper.name = name;

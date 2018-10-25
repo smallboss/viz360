@@ -1,13 +1,6 @@
 import React from 'react';
 import { Provider } from 'react-redux';
 import { BrowserRouter as Router, Route, Link, Switch } from 'react-router-dom';
-// import 'three/examples/js/loaders/TGALoader';
-// import 'three/examples/js/loaders/FBXLoader';
-// import 'three/examples/js/loaders/DDSLoader';
-// import 'three/examples/js/loaders/MTLLoader';
-// import 'three/examples/js/loaders/OBJLoader';
-// import 'three/examples/js/controls/OrbitControls';
-// import 'three/examples/js/controls/TransformControls';
 
 import * as Utils from '../assets/js/utils';
 
@@ -26,12 +19,7 @@ class App extends React.Component {
         this.state = {
             modelList: [],
             // isAdmin: location.search.indexOf('?model')!=0 ? true : false,
-            // currModel3DId: Utils.parseQueryString(location.search).modelid,
         };
-
-        console.log('Utils.parseQueryString(location.pathname).model3DId', Utils.parseQueryString(location.search).modelid);
-
-        // this.initScene();
     }
 
 
@@ -136,8 +124,8 @@ class App extends React.Component {
             <Provider store={store}>
                 <Router>
                     <Switch>
-                        <Route exact path='/admin_panel' component={ModelList}/>
-                        <Route path='/:id' component={ModelEditor}/>
+                        <Route exact path={`${Utils.getPrefixLink()}/admin_panel`} component={ModelList}/>
+                        <Route path={`${Utils.getPrefixLink()}/:id`} component={ModelEditor}/>
                     </Switch>
                 </Router>
             </Provider>

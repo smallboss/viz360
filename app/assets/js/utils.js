@@ -19,7 +19,16 @@ export function copyToClipboard(text) {
             document.body.removeChild(textarea);
         }
     }
-};
+}
+
+
+
+export function getPrefixLink() {
+    const firstSlash = location.href.indexOf('/', 7);
+    const lastSlash = location.href.lastIndexOf('/');
+
+    return location.href.substr(firstSlash, lastSlash-firstSlash);
+}
 
 
 

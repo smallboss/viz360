@@ -9,9 +9,11 @@ import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Button from '@material-ui/core/Button';
 import Chip from '@material-ui/core/Chip';
+import Snackbar from '@material-ui/core/Snackbar';
 import Slider from '@material-ui/lab/Slider';
 import ArrowbackIcon from '@material-ui/icons/ArrowBack';
 import SaveIcon from '@material-ui/icons/Save';
+import CloseIcon from '@material-ui/icons/Close';
 
 
 import Viewer from './viewer/index';
@@ -35,7 +37,7 @@ class MegaSlider extends React.Component {
     render() {
         return (
             <div className="setng-row">
-                <span>{`${this.props.valName}:`}</span>
+                <span className="stngs-name">{`${this.props.valName}:`}</span>
                 <Slider
                     value={this.props.el[this.props.valName]}
                     min={this.props.min}
@@ -62,6 +64,7 @@ class ModelEditor extends React.Component {
         this.state = {
             lightObjects: [],
             meshObjects: [],
+            showAppMesg: false
         };
 
         this.loaderFBX = new THREE.FBXLoader();
@@ -133,7 +136,7 @@ class ModelEditor extends React.Component {
         const getColor = (el, valName) => {
             return (
                 <div className="setng-row">
-                    <span>{`${valName}:`}</span>
+                    <span className="stngs-name">{`${valName}:`}</span>
                     <input
                         type="color"
                         value={`#${el[valName].getHexString()}`}
@@ -150,7 +153,7 @@ class ModelEditor extends React.Component {
 
             return (
                 <div className="setng-row">
-                    <span>{`${valName}:`}</span>
+                    <span className="stngs-name">{`${valName}:`}</span>
                     <input type="file" onChange={(event)=>{
 
                         const reader = new FileReader();
@@ -182,7 +185,13 @@ class ModelEditor extends React.Component {
             return (
                 <div key={el.uuid} className="wrap-stgs-item">
                     {/*<span>{el.type} <input type="checkbox" value={el.visibility} onChange={()=>{el.visibility=!el.visibility; this.forceUpdate()}} /></span>*/}
-                    <span>{el.type}</span>
+                    <div className="wrap-stng-row">
+                        <span className="stngs-name">{el.type}</span>
+                        { el.type.includes('PointLight')
+                            ? <CloseIcon onClick={()=>this.removeLight(el)}/ >
+                            : ''
+                        }
+                    </div>
                     {getColor(el, 'color')}
                     {getSlider(el, 'intensity', 0.001, 5)}
                     { el.distance ? getSlider(el, 'distance', 0, 1000) : ''}
@@ -195,7 +204,9 @@ class ModelEditor extends React.Component {
                 const materialStgsArray = [];
                 materialStgsArray.push(el.material.map(el=>(
                     <div key={el.uuid} className="wrap-stgs-item">
-                        <span>{el.type}</span>
+                        <div className="wrap-stng-row">
+                            <span className="stngs-name">{el.type}</span>
+                        </div>
                         {getColor(el, 'color')}
                         {getColor(el, 'emissive')}
                         {getColor(el, 'specular')}
@@ -209,7 +220,9 @@ class ModelEditor extends React.Component {
 
             return (
                 <div key={el.material.uuid} className="wrap-stgs-item">
-                    <span>{el.material.type}</span>
+                    <div className="wrap-stng-row">
+                        <span className="stngs-name">{el.material.type}</span>
+                    </div>
                     {getColor(el.material, 'color')}
                     {getColor(el.material, 'emissive')}
                     {getColor(el.material, 'specular')}
@@ -219,6 +232,13 @@ class ModelEditor extends React.Component {
             )
         }
         else return '';
+    }
+
+
+    removeLight( light ) {
+        const newLightObjects = this.state.lightObjects.filter( el => el.uuid != light.uuid );
+        Viewer.removeLight( light );
+        this.setState({ lightObjects: newLightObjects });
     }
 
 
@@ -252,9 +272,8 @@ class ModelEditor extends React.Component {
             body: formData,
         })
             .then((res) => {
-                if(res.status == 200) return res.json();
+                if(res.status == 200)  this.setState({ showAppMesg: true });
             })
-            .then((data) => {})
             .catch(
                 error => console.log(error) // Handle the error response object
             );
@@ -292,6 +311,17 @@ class ModelEditor extends React.Component {
                                 Save
                                 <SaveIcon style={{marginLeft: 5}}/>
                             </Button>
+
+                            <Snackbar
+                                anchorOrigin={{
+                                    vertical: 'bottom',
+                                    horizontal: 'right',
+                                }}
+                                open={this.state.showAppMesg}
+                                autoHideDuration={4000}
+                                onClose={()=>this.setState({ showAppMesg: false })}
+                                message={<span>Model saved</span>}
+                            />
                         </div>
 
                         <div className="wrap-settings">

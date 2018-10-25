@@ -29,7 +29,7 @@ app.use(fileUpload({
 // });
 
 
-app.post('/login/', (req, res) => {
+app.post('/login', (req, res) => {
     const {login, password} = req.body;
 
     db.getUserAcc({login, password})
@@ -37,7 +37,7 @@ app.post('/login/', (req, res) => {
 });
 
 
-app.post('/registration/', (req, res) => {
+app.post('/registration', (req, res) => {
     const {login, password} = req.body;
 
     db.createUserAcc({login, password})
@@ -66,7 +66,7 @@ app.post('/registration/', (req, res) => {
 });
 
 
-app.post('/addpassword/', (req, res) => {
+app.post('/addpassword', (req, res) => {
     const {login, passwordItem} = req.body;
 
     db.addPassword(login, passwordItem)
@@ -74,7 +74,7 @@ app.post('/addpassword/', (req, res) => {
 });
 
 
-app.post('/removepassword/', (req, res) => {
+app.post('/removepassword', (req, res) => {
     const {login, passwordItemIndex} = req.body;
 
     db.removePassword(login, passwordItemIndex)
@@ -82,7 +82,7 @@ app.post('/removepassword/', (req, res) => {
 });
 
 
-app.post('/editpassword/', (req, res) => {
+app.post('/editpassword', (req, res) => {
     const {login, passwordIndex, passwordItem} = req.body;
 
     db.editPassword(login, passwordIndex, passwordItem)
@@ -90,7 +90,7 @@ app.post('/editpassword/', (req, res) => {
 });
 
 
-app.post('/admin_panel/', (req, res) => {
+app.post('/admin_panel', (req, res) => {
     console.dir('-----------------/admin_panel/-------------------');
 
     db.getModel3DList()
@@ -98,7 +98,7 @@ app.post('/admin_panel/', (req, res) => {
 });
 
 
-app.post('/getModel/', (req, res) => {
+app.post('/getModel', (req, res) => {
     console.dir('-----------------/:model3DId/-------------------' + req.body.modelId);
 
     db.getModel3D( req.body.modelId )
@@ -109,7 +109,7 @@ app.post('/getModel/', (req, res) => {
 });
 
 
-app.get('/getModel3DList/', (req, res) => {
+app.get('/getModel3DList', (req, res) => {
     console.dir('-----------------/getModel3DList/-------------------');
 
     db.getModel3DList()
@@ -117,7 +117,7 @@ app.get('/getModel3DList/', (req, res) => {
 });
 
 
-app.post('/removeModel/', (req, res) => {
+app.post('/removeModel', (req, res) => {
     console.dir('-----------------/removeModel/-------------------');
 
 
@@ -137,7 +137,7 @@ app.post('/removeModel/', (req, res) => {
 
 
 
-app.post('/uploadModel/', (req, res) => {
+app.post('/uploadModel', (req, res) => {
     console.dir('-----------------/uploadModel/-------------------' + req.body.modelName);
 
     if (Object.keys(req.files).length == 0) {
@@ -162,7 +162,7 @@ app.post('/uploadModel/', (req, res) => {
 });
 
 
-app.post('/saveModel/', (req, res) => {
+app.post('/saveModel', (req, res) => {
     console.dir('-----------------/saveModel/-------------------');
 
     if (Object.keys(req.files).length == 0) {
@@ -176,7 +176,7 @@ app.post('/saveModel/', (req, res) => {
     model3DFile.mv( path.resolve(path.dirname('') + ServerConfig.model3DStore + modelName+'.json'), function(err) {
         if(err)  return res.status(500).send(err);
 
-        res.send('Model saved!');
+        return res.status(200).send("Model saved");
     });
 });
 

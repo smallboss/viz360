@@ -25,12 +25,10 @@ import DoneIcon from '@material-ui/icons/Done';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 
 
-
 import ServerConfig from '../../../config/config.json';
 
 import ActionTypes from '../../redux/constants/actionTypes';
 import * as Utils from "../../assets/js/utils";
-import Viewer from "../ModelEditor/viewer";
 
 
 const styles = theme => ({
@@ -142,6 +140,7 @@ class ModelList extends React.Component {
         this.props.initCurrModel( newCurrModel );
 
 
+        // fetch(`https://viz360.herokuapp.com/:3010/uploadModel/`, {
         fetch(`${ServerConfig.apiPrefix}:${ServerConfig.serverPort}/uploadModel/`, {
             method: 'POST',
             contentType: false,
@@ -351,7 +350,7 @@ class ModelList extends React.Component {
                                             </Button>
                                         </TableCell>
                                         <TableCell className="small-t_cell">
-                                            <Link to={`/${model._id}`} className={classes.noTextDecor}>
+                                            <Link to={`${Utils.getPrefixLink()}/${model._id}`} className={classes.noTextDecor}>
                                                 <Button variant="contained" color="primary" size="small" className={classes.button}>Edit</Button>
                                             </Link>
                                         </TableCell>
