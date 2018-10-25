@@ -30,10 +30,15 @@ const config = {
     context: resolve(__dirname, 'app'),
 
     devServer: {
+        headers: {
+            'Access-Control-Allow-Origin': '*'
+        },
+        host: '104.248.125.47',
         hot: true,
         contentBase: resolve(__dirname, 'build'),
         historyApiFallback: true,
-        publicPath: '/'
+        publicPath: '/',
+        port: 8080
     },
 
     resolve: {
