@@ -399,7 +399,7 @@ export default compose(
                     cache: 'default',
                 };
 
-                fetch(`${ServerConfig.apiPrefix}:${ServerConfig.serverPort}/getModel3DList/`, myInit)
+                fetch(`${ServerConfig.apiPrefix}:${ServerConfig.serverPort}/getModel3DList`, myInit)
                     .then((res) => {
                         if (res.status == 200) return res.json();
                     })

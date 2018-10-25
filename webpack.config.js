@@ -15,7 +15,7 @@ const config = {
 
     entry: [
         'react-hot-loader/patch',
-        'webpack-dev-server/client?http://localhost:8080',
+        'webpack-dev-server/client?http://104.248.125.47:8080',
         'webpack/hot/only-dev-server',
         './main.js',
         './assets/scss/main.scss',
@@ -160,7 +160,7 @@ const config = {
         new webpack.optimize.ModuleConcatenationPlugin(),
         new ExtractTextPlugin({filename: './styles/style.css', disable: false, allChunks: true}),
         new CopyWebpackPlugin([{from: 'vendors', to: 'vendors'}]),
-        new OpenBrowserPlugin({url: 'http://localhost:8080/project/viz360/admin_panel'}),
+        // new OpenBrowserPlugin({url: 'http://localhost:8080/project/viz360/admin_panel'}),
         new webpack.HotModuleReplacementPlugin(),
     ]
 };
