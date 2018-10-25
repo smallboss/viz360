@@ -105,7 +105,6 @@ class ModelList extends React.Component {
     }
 
     toggleTab( event ) {
-        console.log('event', event.target);
         event.target.classList.toggle('selected');
     }
 
@@ -119,9 +118,12 @@ class ModelList extends React.Component {
     };
 
 
-    uploadModel( ) {
+    uploadModel() {
         this.converModeltToJSON( this.uploadModelFiles[0].preview, this.uploadModelFiles[0].name, (modelJSON)=>this.uploadModelJSON( modelJSON )  );
+
+        this.props.history.push(`/${this.state.uploadModelName}`);
     }
+
 
     uploadModelJSON( modelJSON ) {
         const json = JSON.stringify(modelJSON);
@@ -140,8 +142,7 @@ class ModelList extends React.Component {
         this.props.initCurrModel( newCurrModel );
 
 
-        // fetch(`https://viz360.herokuapp.com/:3010/uploadModel/`, {
-        fetch(`${ServerConfig.apiPrefix}:${ServerConfig.serverPort}/uploadModel/`, {
+        fetch(`${ServerConfig.apiPrefix}:${ServerConfig.serverPort}/uploadModel`, {
             method: 'POST',
             contentType: false,
             body: formData,
@@ -150,12 +151,12 @@ class ModelList extends React.Component {
                 if (res.status == 200) return res.json();
             })
             .then((data) => {
-                this.props.history.push(`/${this.state.uploadModelName}`);
             })
             .catch(
                 error => console.log(error) // Handle the error response object
             );
     }
+
 
     converModeltToJSON( modelUrl, fileModelName, callback ) {
 
@@ -189,7 +190,12 @@ class ModelList extends React.Component {
     firstTuningModel( model ) {
 
         model.traverse( el => {
-           if(el.material) el.material.side = THREE.DoubleSide;
+           if(el.material) {
+               if(el.material.length){
+                   el.material.forEach( el => el.side=THREE.DoubleSide )
+               }
+               else el.material.side=THREE.DoubleSide;
+           }
         });
 
         const ambientLight = new THREE.AmbientLight(0xffffff, .6);
@@ -205,13 +211,42 @@ class ModelList extends React.Component {
             console.log('FILE: ', file);
             this.uploadModelFiles.push( file );
         });
+
+        this.forceUpdate();
     }
 
 
     render() {
         const { classes } = this.props;
 
-        console.log('this.props.modelList', this.props.modelList);
+        const isUploadDisabled = () => {
+            console.log(this.state.uploadModelName, this.uploadModelFiles)
+
+            if(this.state.uploadModelName && this.uploadModelFiles && this.uploadModelFiles.length) {
+                return(
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        className={classNames(classes.button, classes.btnUploadModel)}
+                        onClick={()=>this.uploadModel()}>
+                        Upload & edit
+                        <CloudUploadIcon className={classes.rightIcon} />
+                    </Button>
+                )
+            }
+
+            return(
+                <Button
+                    variant="contained"
+                    color="primary"
+                    disabled
+                    className={classNames(classes.button, classes.btnUploadModel)}
+                    onClick={()=>this.uploadModel()}>
+                    Upload & edit
+                    <CloudUploadIcon className={classes.rightIcon} />
+                </Button>
+            )
+        };
 
         return (
             <section className="admin-panel">
@@ -320,11 +355,7 @@ class ModelList extends React.Component {
 
                                 </DialogContentText>
 
-                                <Button variant="contained" color="primary" className={classNames(classes.button, classes.btnUploadModel)}
-                                    onClick={()=>this.uploadModel()}>
-                                    Upload & edit
-                                    <CloudUploadIcon className={classes.rightIcon} />
-                                </Button>
+                                { isUploadDisabled() }
                             </DialogContent>
 
                         </Dialog>

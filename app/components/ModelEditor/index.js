@@ -87,7 +87,10 @@ class ModelEditor extends React.Component {
 
 
     loadModel(modelUrl, isLolModel) {
-        const modelDownloadUrl = (!isLolModel ? ServerConfig.apiPrefix + ':' + ServerConfig.serverPort + ServerConfig.model3DStore : '') + modelUrl
+
+        document.getElementById('preloader').classList.remove('hide');
+
+        const modelDownloadUrl = (!isLolModel ? ServerConfig.apiPrefix + ':' + ServerConfig.serverPort + ServerConfig.model3DStore : '') + modelUrl;
 
         this.loaderObject.load(modelDownloadUrl, (model) => {
                 this.model = model;
@@ -112,6 +115,8 @@ class ModelEditor extends React.Component {
                     lightObjects: lightObjects,
                     meshObjects: meshObjects
                 });
+
+                document.getElementById('preloader').classList.add('hide');
             },
             (xhr) => {
                 console.log((xhr.loaded / xhr.total * 100) + '% loaded')
@@ -151,11 +156,11 @@ class ModelEditor extends React.Component {
 
         const getTexture = (el, valName) => {
 
-            console.log('LOG', el);
+            const materialMap =  el.material ? el.material : el;
 
             const bgTexture = {};
-            if(el.material[valName] && el.material[valName].image)
-                bgTexture.backgroundImage = `url(${el.material[valName].image.src})`;
+            if(materialMap[valName] && materialMap[valName].image)
+                bgTexture.backgroundImage = `url(${materialMap[valName].image.src})`;
 
 
             return (
@@ -178,13 +183,11 @@ class ModelEditor extends React.Component {
                                 texture.image = image;
                                 texture.minFilter = THREE.LinearFilter;
                                 texture.magFilter = THREE.LinearFilter;
-                                if(el.material) el.material[valName] = texture;
-                                else el[valName] = texture;
+                                materialMap[valName] = texture;
                                 image.onload = function() {
                                     texture.needsUpdate = true;
                                     console.log('event.target', textureInput);
-                                    if(el.material) el.material.needsUpdate = true;
-                                    else el.needsUpdate = true;
+                                    materialMap.needsUpdate = true;
 
                                     textureInput.parentElement.style['background-image'] = `url(${e.target.result})`;
                                 };
@@ -265,7 +268,7 @@ class ModelEditor extends React.Component {
     }
 
     componentDidUpdate(nextProps) {
-        if (!this.state.lightObjects.length) this.loadModel(this.props.currModel.url);
+        if (!this.state.lightObjects.length) this.loadModel(this.props.currModel.url, this.props.currModel.url.includes('blob'));
     }
 
     componentWillUnmount() {
@@ -275,11 +278,13 @@ class ModelEditor extends React.Component {
 
 
     saveModel() {
+
+        document.getElementById('preloader').classList.remove('hide');
+
         const json = JSON.stringify( this.model );
         const blob = new Blob([json], {type: "octet/stream"});
 
         const formData = new FormData();
-        // formData.append('modelId', this.props.currModel.name);
         formData.append('modelName', this.props.currModel.name);
         formData.append('file', blob);
 
@@ -291,6 +296,8 @@ class ModelEditor extends React.Component {
         })
             .then((res) => {
                 if(res.status == 200)  this.setState({ showAppMesg: true });
+
+                document.getElementById('preloader').classList.add('hide');
             })
             .catch(
                 error => console.log(error) // Handle the error response object
