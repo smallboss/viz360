@@ -151,31 +151,49 @@ class ModelEditor extends React.Component {
 
         const getTexture = (el, valName) => {
 
+            console.log('LOG', el);
+
+            const bgTexture = {};
+            if(el.material[valName] && el.material[valName].image)
+                bgTexture.backgroundImage = `url(${el.material[valName].image.src})`;
+
+
             return (
                 <div className="setng-row">
                     <span className="stngs-name">{`${valName}:`}</span>
-                    <input type="file" onChange={(event)=>{
 
-                        const reader = new FileReader();
-                        reader.onload = (e) => {
-                            const image = new Image();
-                            image.src = e.target.result;
-                            const texture = new THREE.Texture();
-                            texture.image = image;
-                            texture.minFilter = THREE.LinearFilter;
-                            texture.magFilter = THREE.LinearFilter;
-                            if(el.material) el.material[valName] = texture;
-                            else el[valName] = texture;
-                            image.onload = function() {
-                                texture.needsUpdate = true;
-                                if(el.material) el.material.needsUpdate = true;
-                                else el.needsUpdate = true;
+                    <div className="texture-preview" style={ bgTexture }>
+                        <input type="file" onChange={(event)=>{
+
+                            const textureInput = event.target;
+
+                            console.log('event.target', event.target);
+
+                            const reader = new FileReader();
+                            reader.onload = (e) => {
+                                console.log('event.target', textureInput);
+                                const image = new Image();
+                                image.src = e.target.result;
+                                const texture = new THREE.Texture();
+                                texture.image = image;
+                                texture.minFilter = THREE.LinearFilter;
+                                texture.magFilter = THREE.LinearFilter;
+                                if(el.material) el.material[valName] = texture;
+                                else el[valName] = texture;
+                                image.onload = function() {
+                                    texture.needsUpdate = true;
+                                    console.log('event.target', textureInput);
+                                    if(el.material) el.material.needsUpdate = true;
+                                    else el.needsUpdate = true;
+
+                                    textureInput.parentElement.style['background-image'] = `url(${e.target.result})`;
+                                };
+                                // texture.wrapS = texture.wrapT = THREE.MirroredRepeatWrapping;
                             };
-                            // texture.wrapS = texture.wrapT = THREE.MirroredRepeatWrapping;
-                        };
 
-                        reader.readAsDataURL(event.target.files[0]);
-                    }}/>
+                            reader.readAsDataURL(event.target.files[0]);
+                        }}/>
+                    </div>
                 </div>
             )
         };
