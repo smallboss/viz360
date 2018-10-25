@@ -88,7 +88,7 @@ class ModelEditor extends React.Component {
 
     loadModel(modelUrl, isLolModel) {
 
-        document.getElementById('preloader').classList.remove('hide');
+        if(!isLolModel) document.getElementById('preloader').classList.remove('hide');
 
         const modelDownloadUrl = (!isLolModel ? ServerConfig.apiPrefix + ':' + ServerConfig.serverPort + ServerConfig.model3DStore : '') + modelUrl;
 
