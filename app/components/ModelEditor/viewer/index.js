@@ -36,6 +36,8 @@ class Viewer {
         this.raycaster = new THREE.Raycaster();
 
         this.initEvents();
+
+        this.controlsChaned = false;
     }
 
 
@@ -44,12 +46,19 @@ class Viewer {
             this.orbitControls.enabled = !event.value;
         });
 
-        document.addEventListener('mousedown', (event)=>this.raycarsModel(event) );
+        this.transformControls.addEventListener( 'change', ()=>this.controlsChaned=true );
+        this.orbitControls.addEventListener( 'change', ()=>this.controlsChaned=true );
+
+        document.addEventListener('mousedown', ()=>this.controlsChaned=false );
+        document.addEventListener('mouseup', (event)=>this.onMouseup(event) );
     }
 
 
 
-    raycarsModel(event){
+    onMouseup(event){
+
+        if(this.controlsChaned)  return;
+
         const mouse = new THREE.Vector2();
 
         mouse.x = ( event.layerX / this.renderer.domElement.offsetWidth ) * 2 - 1;
@@ -60,17 +69,23 @@ class Viewer {
 
         const intersectsLight = this.raycaster.intersectObjects( this.groupLightHelpers.children );
 
-        if(intersectsLight.length) this.transformControls.attach( intersectsLight[0].object.light );
+        if(intersectsLight.length) {
+            this.transformControls.attach( intersectsLight[0].object.light );
+            this.transformControls.setMode( "translate" );
+        }
         else{
-            // const intersectsModel = this.raycaster.intersectObjects( this.model.children );
+            const intersectsModel = this.raycaster.intersectObjects( this.model.children );
 
-            // if(intersectsModel.length)  this.transformControls.attach( intersectsModel[0] );
-            // else{
+            if(intersectsModel.length)  {
+                this.transformControls.attach( intersectsModel[0].object );
+                this.transformControls.setMode("rotate");
+            }
+            else{
                 const transfControlsArrows = this.transformControls.children[0].children[3].children;
                 const intersectsArrows = this.raycaster.intersectObjects( transfControlsArrows );
 
                 if(!intersectsArrows.length) this.transformControls.detach();
-            // }
+            }
         }
     }
 
