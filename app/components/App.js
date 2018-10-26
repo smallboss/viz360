@@ -8,6 +8,7 @@ import ServerConfig from '../../config/config.json';
 
 import ModelList from './ModelList';
 import ModelEditor from './ModelEditor';
+import ModelViewer from './ModelViewer';
 
 import store from '../redux/store';
 
@@ -24,6 +25,9 @@ class App extends React.Component {
 
 
     render() {
+
+        console.log('Utils.getPrefixLink()', Utils.getPrefixLink());
+
         return (
             <Provider store={store}>
                 <Router>
@@ -47,7 +51,8 @@ class App extends React.Component {
 
                         <Switch>
                             <Route exact path={`${Utils.getPrefixLink()}/admin_panel`} component={ModelList}/>
-                            <Route path={`${Utils.getPrefixLink()}/:id`} component={ModelEditor}/>
+                            <Route path={`${Utils.getPrefixLink()}/admin_panel/:id`} component={ModelEditor}/>
+                            <Route path={`${Utils.getPrefixLink()}/:id`} component={ModelViewer}/>
                         </Switch>
                     </div>
                 </Router>

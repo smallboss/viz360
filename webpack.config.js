@@ -15,7 +15,7 @@ const config = {
 
     entry: [
         'react-hot-loader/patch',
-        'webpack-dev-server/client?http://104.248.125.47:8080',
+        'webpack-dev-server/client?http://0.0.0.0:8080',
         'webpack/hot/only-dev-server',
         './main.js',
         './assets/scss/main.scss',
@@ -33,8 +33,8 @@ const config = {
         headers: {
             'Access-Control-Allow-Origin': '*'
         },
-        host: '104.248.125.47',
-        // host: '0.0.0.0',
+        // host: '104.248.125.47',
+        host: '0.0.0.0',
         hot: true,
         contentBase: resolve(__dirname, 'build'),
         historyApiFallback: true,

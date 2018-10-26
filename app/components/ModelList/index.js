@@ -220,7 +220,6 @@ class ModelList extends React.Component {
         const { classes } = this.props;
 
         const isUploadDisabled = () => {
-            console.log(this.state.uploadModelName, this.uploadModelFiles)
 
             if(this.state.uploadModelName && this.uploadModelFiles && this.uploadModelFiles.length) {
                 return(
@@ -381,7 +380,7 @@ class ModelList extends React.Component {
                                             </Button>
                                         </TableCell>
                                         <TableCell className="small-t_cell">
-                                            <Link to={`${Utils.getPrefixLink()}/${model._id}`} className={classes.noTextDecor}>
+                                            <Link to={`${Utils.getPrefixLink()}/admin_panel/${model._id}`} className={classes.noTextDecor}>
                                                 <Button variant="contained" color="primary" size="small" className={classes.button}>Edit</Button>
                                             </Link>
                                         </TableCell>

@@ -24,10 +24,15 @@ export function copyToClipboard(text) {
 
 
 export function getPrefixLink() {
-    const firstSlash = location.href.indexOf('/', 7);
+    const firstSlash = location.href.indexOf('/', 9);
     const lastSlash = location.href.lastIndexOf('/');
 
-    return location.href.substr(firstSlash, lastSlash-firstSlash);
+    let prefixLink = location.href.substr(firstSlash, lastSlash-firstSlash);
+    if(prefixLink.lastIndexOf('/') == prefixLink.length - '/admin_panel'.length) {
+        prefixLink = prefixLink.substr(0, prefixLink.length-'/admin_panel'.length)
+    }
+
+    return prefixLink;
 }
 
 

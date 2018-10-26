@@ -16,7 +16,7 @@ import SaveIcon from '@material-ui/icons/Save';
 import CloseIcon from '@material-ui/icons/Close';
 
 
-import Viewer from './viewer/index';
+import Viewer from '../viewer/index';
 
 import ServerConfig from '../../../config/config.json';
 
@@ -35,11 +35,14 @@ const styles = theme => ({
 
 class MegaSlider extends React.Component {
     render() {
+
+        const value = this.props.el[this.props.valName] ? this.props.el[this.props.valName] : 0;
+
         return (
             <div className="setng-row">
                 <span className="stngs-name">{`${this.props.valName}:`}</span>
                 <Slider
-                    value={this.props.el[this.props.valName]}
+                    value={ value }
                     min={this.props.min}
                     max={this.props.max}
                     onChange={(event, value) => {
@@ -233,6 +236,12 @@ class ModelEditor extends React.Component {
                         {getColor(el, 'specular')}
                         {getSlider(el, 'shininess', 0, 100)}
                         {getTexture(el, 'map')}
+                        {getTexture(el, 'specularMap')}
+                        {getTexture(el, 'normalMap')}
+                        {getTexture(el, 'envMap')}
+                        {getSlider(el, 'envMapIntensity', 0, 1)}
+                        {getTexture(el, 'aoMap')}
+                        {getSlider(el, 'aoMapIntensity', 0, 1)}
                     </div>
                 )))
 
@@ -249,6 +258,12 @@ class ModelEditor extends React.Component {
                     {getColor(el.material, 'specular')}
                     {getSlider(el.material, 'shininess', 0, 100)}
                     {getTexture(el, 'map')}
+                    {getTexture(el, 'specularMap')}
+                    {getTexture(el, 'normalMap')}
+                    {getTexture(el, 'envMap')}
+                    {getSlider(el.material, 'envMapIntensity', 0, 1)}
+                    {getTexture(el, 'aoMap')}
+                    {getSlider(el.material, 'aoMapIntensity', 0, 1)}
                 </div>
             )
         }
@@ -395,7 +410,7 @@ class ModelEditor extends React.Component {
                 </Card>
 
 
-                <Card>
+                <Card style={{ width: '100%' }}>
                     <div ref={this.handleCanvasContainer} className="wrap-viewer"></div>
                 </Card>
             </section>
