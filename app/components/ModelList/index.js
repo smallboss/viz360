@@ -123,6 +123,9 @@ class ModelList extends React.Component {
 
 
     uploadModelJSON( modelJSON ) {
+
+        console.log('uploadModelJSON', modelJSON);
+
         const json = JSON.stringify(modelJSON);
         const blob = new Blob([json], {type: "octet/stream"});
 
@@ -191,9 +194,7 @@ class ModelList extends React.Component {
 
         model.traverse( el => {
            if(el.material) {
-               if(el.material.length){
-                   el.material.forEach( el => el.side=THREE.DoubleSide )
-               }
+               if(el.material.length)  el.material.forEach( el => el.side=THREE.DoubleSide );
                else el.material.side=THREE.DoubleSide;
            }
         });
@@ -201,15 +202,26 @@ class ModelList extends React.Component {
         const ambientLight = new THREE.AmbientLight(0xffffff, .6);
         ambientLight.name = 'AmbientLight';
         model.add(ambientLight);
+
+        const pointLight = new THREE.PointLight(0xff5555, 1.7, 800);
+        pointLight.name = 'PointLight';
+        pointLight.position.set(0, 200, 150);
+        pointLight.updateMatrix();
+        model.add(pointLight);
     }
 
     onDrop( acceptedFiles ) {
         this.uploadModelFiles = [];
 
+        this.wrapFileNames.innerText = '';
+
         acceptedFiles.forEach(file => {
             console.log('FILE: ', file);
+            this.wrapFileNames.innerText += ' ' + file.name+',';
             this.uploadModelFiles.push( file );
         });
+
+        this.wrapFileNames.innerText = this.wrapFileNames.innerText.substr(0, this.wrapFileNames.innerText.length-1);
 
         this.forceUpdate();
     }
@@ -336,14 +348,14 @@ class ModelList extends React.Component {
                             <DialogContent>
                                 <DialogContentText id="alert-dialog-description">
                                     <TextField
-                                        label="Model name"
+                                        label="Model name*"
                                         className={classNames(classes.textField, classes.modelName, classes.w100p)}
                                         margin="dense"
                                         value={ this.state.uploadModelName }
                                         onChange={ (event)=>this.setState({ uploadModelName: event.target.value }) }/>
 
                                     <Dropzone onDrop={this.onDrop.bind(this)} className="dropzone" >
-                                        <p className="dropzone-text">Drop files here or click to upload.</p>
+                                        <p ref={el=>this.wrapFileNames=el} className="dropzone-text">Drop files here or click to upload.</p>
                                     </Dropzone>
 
                                     <div className="wrap-tag-list">
@@ -381,8 +393,11 @@ class ModelList extends React.Component {
                     </div>
                 </div>
 
+                { !this.activeModelList().length ? <span>Model list is empty</span> : '' }
+
                 <Paper className="wrap-table-list">
                     <Table className="model-list">
+
                         <TableBody>
                             {this.activeModelList().map(model => {
                                 return (

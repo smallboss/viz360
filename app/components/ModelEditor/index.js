@@ -163,6 +163,45 @@ class ModelEditor extends React.Component {
                 console.log('An error happened ', err)
             }
         );
+
+        // const setPath = ServerConfig.apiPrefix + ':' + ServerConfig.serverPort + ServerConfig.model3DStore;
+        //
+        // THREE.Loader.Handlers.add( /\.dds$/i, new THREE.DDSLoader() );
+        // new THREE.MTLLoader()
+        //     .setPath( setPath )
+        //     .load( 'GUN_OBJ.mtl', ( materials ) => {
+        //         materials.preload();
+        //         new THREE.OBJLoader()
+        //             .setMaterials( materials )
+        //             .setPath( setPath )
+        //             .load( 'GUN_OBJ.obj', ( model ) => {
+        //                 this.model = model;
+        //                 console.log('LOADED MODEL: ', this.model);
+        //                 Viewer.addModelToScene(this.model);
+        //
+        //                 document.getElementById('preloader').classList.add('hide');
+        //
+        //                 // const lightObjects = [];
+        //                 // const meshObjects = [];
+        //                 //
+        //                 // this.model.traverse(el => {
+        //                 //     if (el.type.includes('Light')) lightObjects.push(el);
+        //                 //     else if (el.type.includes('Mesh')) meshObjects.push(el)
+        //                 // });
+        //                 //
+        //                 //
+        //                 // this.model.traverse(el => {
+        //                 //     if (el.type.includes('PointLight')) Viewer.addLightHelper(el);
+        //                 // });
+        //                 //
+        //                 //
+        //                 // this.setState({
+        //                 //     lightObjects: lightObjects,
+        //                 //     meshObjects: meshObjects
+        //                 // });
+        //                 // Viewer.addModelToScene( object );
+        //             }, ()=>{}, err=>{console.log('ERROR: ', err)} );
+        //     } );
     }
 
 
@@ -421,7 +460,7 @@ class ModelEditor extends React.Component {
 
                         <div className="wrap-settings">
                             <TextField
-                                label="Model name"
+                                label="Model name*"
                                 className={classNames(classes.textField, classes.modelName, classes.w100p)}
                                 name="model-name"
                                 margin="dense"
