@@ -1,6 +1,6 @@
 {
-  "apiPrefixDO": "http://104.248.125.47",
-  "apiPrefix": "http://localhost",
+  "apiPrefix": "http://104.248.125.47",
+  "apiPrefixLoc": "http://localhost",
   "serverPort": "3010",
   "getChannel": "channel",
   "model3DStore": "/api/models3D/",
