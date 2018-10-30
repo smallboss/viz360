@@ -5,6 +5,7 @@ import {compose} from 'redux';
 
 import classNames from 'classnames';
 
+import TextField from '@material-ui/core/TextField';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Button from '@material-ui/core/Button';
@@ -25,11 +26,35 @@ import {withStyles} from "@material-ui/core/styles/index";
 
 
 const styles = theme => ({
+    button: {
+        margin: theme.spacing.unit,
+    },
     chip: {
         margin: 4,
         padding: '5px 0',
         height: 'auto'
     },
+    textField: {
+        marginLeft: theme.spacing.unit,
+        marginRight: theme.spacing.unit,
+        width: 200,
+    },
+    modelName: {
+        marginTop: 0,
+        marginBottom: 10,
+    },
+    w100p: {
+        marginLeft: 0,
+        marginRight: 0,
+        width: '100%'
+    },
+    uploadModalTitle: {
+        paddingBottom: 15,
+    },
+    btnUploadModel: {
+        margin: '20px auto -7px',
+        display: 'flex',
+    }
 });
 
 
@@ -42,7 +67,7 @@ class MegaSlider extends React.Component {
             <div className="setng-row">
                 <span className="stngs-name">{`${this.props.valName}:`}</span>
                 <Slider
-                    value={ value }
+                    value={value}
                     min={this.props.min}
                     max={this.props.max}
                     onChange={(event, value) => {
@@ -56,8 +81,6 @@ class MegaSlider extends React.Component {
 }
 
 
-
-
 class ModelEditor extends React.Component {
     constructor(props) {
         super(props);
@@ -67,7 +90,8 @@ class ModelEditor extends React.Component {
         this.state = {
             lightObjects: [],
             meshObjects: [],
-            showAppMesg: false
+            showAppMesg: false,
+            newTagCurrModel: '',
         };
 
         this.loaderFBX = new THREE.FBXLoader();
@@ -83,6 +107,7 @@ class ModelEditor extends React.Component {
         const posLastSlash = location.pathname.lastIndexOf('/');
         const modelId = location.pathname.substring(posLastSlash + 1);
 
+        console.log('this.props.currModel.url', this.props.currModel.url);
 
         if (!this.props.currModel.url) this.props.initCurrModel(modelId);
         else this.loadModel(this.props.currModel.url, true);
@@ -91,7 +116,11 @@ class ModelEditor extends React.Component {
 
     loadModel(modelUrl, isLolModel) {
 
-        if(!isLolModel) document.getElementById('preloader').classList.remove('hide');
+        if (!isLolModel) {
+            const previewImg = `${ServerConfig.apiPrefix + ':' + ServerConfig.serverPort + ServerConfig.model3DStore + this.props.currModel._id}.jpeg`;
+            document.getElementById('preloader').classList.remove('hide');
+            document.getElementById('preloader').style['background-image'] = `url(${previewImg})`;
+        }
 
         const modelDownloadUrl = (!isLolModel ? ServerConfig.apiPrefix + ':' + ServerConfig.serverPort + ServerConfig.model3DStore : '') + modelUrl;
 
@@ -104,13 +133,13 @@ class ModelEditor extends React.Component {
                 const meshObjects = [];
 
                 this.model.traverse(el => {
-                    if(el.type.includes('Light')) lightObjects.push(el);
-                    else if(el.type.includes('Mesh')) meshObjects.push(el)
+                    if (el.type.includes('Light')) lightObjects.push(el);
+                    else if (el.type.includes('Mesh')) meshObjects.push(el)
                 });
 
 
                 this.model.traverse(el => {
-                    if(el.type.includes('PointLight'))  Viewer.addLightHelper( el );
+                    if (el.type.includes('PointLight')) Viewer.addLightHelper(el);
                 });
 
 
@@ -122,7 +151,7 @@ class ModelEditor extends React.Component {
                 document.getElementById('preloader').classList.add('hide');
             },
             (xhr) => {
-                console.log((xhr.loaded / xhr.total * 100) + '% loaded')
+                // console.log((xhr.loaded / xhr.total * 100) + '% loaded')
             },
             (err) => {
                 console.log('An error happened ', err)
@@ -131,15 +160,7 @@ class ModelEditor extends React.Component {
     }
 
 
-    initStgsPanel(model) {
-        model.traverse(el => {
-            console.log('el: ', el);
-        })
-    }
-
-
     renderStgsItem(el) {
-        console.log('EL', el);
 
         const getColor = (el, valName) => {
             return (
@@ -148,21 +169,24 @@ class ModelEditor extends React.Component {
                     <input
                         type="color"
                         value={`#${el[valName].getHexString()}`}
-                        onChange={(event)=>{ el[valName].setStyle( event.target.value ); this.forceUpdate(); }} />
+                        onChange={(event) => {
+                            el[valName].setStyle(event.target.value);
+                            this.forceUpdate();
+                        }}/>
                 </div>
             )
         };
 
         const getSlider = (el, valName, min, max) => {
-            return <MegaSlider el={el} valName={valName} min={min} max={max} />
+            return <MegaSlider el={el} valName={valName} min={min} max={max}/>
         };
 
         const getTexture = (el, valName) => {
 
-            const materialMap =  el.material ? el.material : el;
+            const materialMap = el.material ? el.material : el;
 
             const bgTexture = {};
-            if(materialMap[valName] && materialMap[valName].image)
+            if (materialMap[valName] && materialMap[valName].image)
                 bgTexture.backgroundImage = `url(${materialMap[valName].image.src})`;
 
 
@@ -170,16 +194,13 @@ class ModelEditor extends React.Component {
                 <div className="setng-row">
                     <span className="stngs-name">{`${valName}:`}</span>
 
-                    <div className="texture-preview" style={ bgTexture }>
-                        <input type="file" onChange={(event)=>{
+                    <div className="texture-preview" style={bgTexture}>
+                        <input type="file" onChange={(event) => {
 
                             const textureInput = event.target;
 
-                            console.log('event.target', event.target);
-
                             const reader = new FileReader();
                             reader.onload = (e) => {
-                                console.log('event.target', textureInput);
                                 const image = new Image();
                                 image.src = e.target.result;
                                 const texture = new THREE.Texture();
@@ -187,9 +208,8 @@ class ModelEditor extends React.Component {
                                 texture.minFilter = THREE.LinearFilter;
                                 texture.magFilter = THREE.LinearFilter;
                                 materialMap[valName] = texture;
-                                image.onload = function() {
+                                image.onload = function () {
                                     texture.needsUpdate = true;
-                                    console.log('event.target', textureInput);
                                     materialMap.needsUpdate = true;
 
                                     textureInput.parentElement.style['background-image'] = `url(${e.target.result})`;
@@ -205,28 +225,28 @@ class ModelEditor extends React.Component {
         };
 
 
-        if(el.type.includes('Light')) {
+        if (el.type.includes('Light')) {
             return (
                 <div key={el.uuid} className="wrap-stgs-item">
                     {/*<span>{el.type} <input type="checkbox" value={el.visibility} onChange={()=>{el.visibility=!el.visibility; this.forceUpdate()}} /></span>*/}
                     <div className="wrap-stng-row">
                         <span className="stngs-name">{el.type}</span>
-                        { el.type.includes('PointLight')
-                            ? <CloseIcon onClick={()=>this.removeLight(el)}/ >
+                        {el.type.includes('PointLight')
+                            ? <CloseIcon onClick={() => this.removeLight(el)}/ >
                             : ''
-                        }
+                            }
                     </div>
                     {getColor(el, 'color')}
                     {getSlider(el, 'intensity', 0.001, 5)}
-                    { el.distance ? getSlider(el, 'distance', 0, 1000) : ''}
+                    {el.distance ? getSlider(el, 'distance', 0, 1000) : ''}
                 </div>
             )
         }
-        else if(el.type.includes('Mesh')) {
+        else if (el.type.includes('Mesh')) {
 
-            if(el.material.length){
+            if (el.material.length) {
                 const materialStgsArray = [];
-                materialStgsArray.push(el.material.map(el=>(
+                materialStgsArray.push(el.material.map(el => (
                     <div key={el.uuid} className="wrap-stgs-item">
                         <div className="wrap-stng-row">
                             <span className="stngs-name">{el.type}</span>
@@ -271,10 +291,10 @@ class ModelEditor extends React.Component {
     }
 
 
-    removeLight( light ) {
-        const newLightObjects = this.state.lightObjects.filter( el => el.uuid != light.uuid );
-        Viewer.removeLight( light );
-        this.setState({ lightObjects: newLightObjects });
+    removeLight(light) {
+        const newLightObjects = this.state.lightObjects.filter(el => el.uuid != light.uuid);
+        Viewer.removeLight(light);
+        this.setState({lightObjects: newLightObjects});
     }
 
 
@@ -296,21 +316,35 @@ class ModelEditor extends React.Component {
 
         document.getElementById('preloader').classList.remove('hide');
 
-        const json = JSON.stringify( this.model );
+        const json = JSON.stringify(this.model);
         const blob = new Blob([json], {type: "octet/stream"});
 
+        this.canvasContainer.style['background-image'] = `url(${Viewer.getPreviewImg()})`;
+        Viewer.renderer.domElement.classList.add('fullscreen');
+        Viewer.updateCanvasSizeDimensions();
+
+        const modelPreview = Viewer.getPreviewImg();
+
         const formData = new FormData();
-        formData.append('modelName', this.props.currModel.name);
+        formData.append('model', JSON.stringify(this.props.currModel));
         formData.append('file', blob);
+        formData.append('filePreview', modelPreview);
+
+        document.getElementById('preloader').style['background-image'] = `url(${modelPreview})`;
 
 
-        fetch(`${ServerConfig.apiPrefix}:${ServerConfig.serverPort}/saveModel/`, {
+        Viewer.renderer.domElement.classList.remove('fullscreen');
+        setTimeout(()=>Viewer.updateCanvasSizeDimensions(), 1);
+
+        const saveModelMethod = !this.props.currModel._id ? 'uploadModel' : 'saveModel';
+
+        fetch(`${ServerConfig.apiPrefix}:${ServerConfig.serverPort}/${saveModelMethod}`, {
             method: 'POST',
             contentType: false,
             body: formData,
         })
             .then((res) => {
-                if(res.status == 200)  this.setState({ showAppMesg: true });
+                if (res.status == 200) this.setState({showAppMesg: true});
 
                 document.getElementById('preloader').classList.add('hide');
             })
@@ -325,10 +359,16 @@ class ModelEditor extends React.Component {
         pointLight.name = 'PointLight';
         pointLight.position.set(0, 180, 0);
 
-        this.model.add( pointLight );
-        Viewer.addLightHelper( pointLight );
+        this.model.add(pointLight);
+        Viewer.addLightHelper(pointLight);
 
-        this.setState({ lightObjects: [...this.state.lightObjects, pointLight] });
+        this.setState({lightObjects: [...this.state.lightObjects, pointLight]});
+    }
+
+    addNewTagCurrModel(event) {
+        event.preventDefault();
+        this.props.addModelTag(this.state.newTagCurrModel);
+        this.setState({newTagCurrModel: ''});
     }
 
 
@@ -336,7 +376,7 @@ class ModelEditor extends React.Component {
         const {classes} = this.props;
 
         return (
-            <section className="wrap-editor">
+            <section className={`wrap-editor ${ !this.props.currModel.name ? 'hide' : ''}`}>
                 <Card className="settings-panel">
                     <CardContent>
                         <div className="wrap-settings-top-btn">
@@ -347,7 +387,7 @@ class ModelEditor extends React.Component {
                                 </Button>
                             </Link>
 
-                            <Button variant="contained" color="primary" onClick={()=>this.saveModel()}>
+                            <Button variant="contained" color="primary" onClick={() => this.saveModel()}>
                                 Save
                                 <SaveIcon style={{marginLeft: 5}}/>
                             </Button>
@@ -359,30 +399,47 @@ class ModelEditor extends React.Component {
                                 }}
                                 open={this.state.showAppMesg}
                                 autoHideDuration={4000}
-                                onClose={()=>this.setState({ showAppMesg: false })}
+                                onClose={() => this.setState({showAppMesg: false})}
                                 message={<span>Model saved</span>}
                             />
                         </div>
 
                         <div className="wrap-settings">
-                            <h3>{this.props.currModel.name}</h3>
+                            <TextField
+                                label="Model name"
+                                className={classNames(classes.textField, classes.modelName, classes.w100p)}
+                                name="model-name"
+                                margin="dense"
+                                value={this.props.currModel.name || ''}
+                                onChange={(event) => this.props.setCurrModelName(event.target.value)}/>
 
                             <div className="wrap-settings-model-tags">
-                                <Chip
-                                    label="Selected Tag 2"
-                                    className={classNames(classes.chip, "model-tag selected")}
-                                    color="primary"
-                                    onClick={() => {
-                                    }}
-                                />
-                                <Chip
-                                    label="Selected Tag 2"
-                                    className={classNames(classes.chip, "model-tag selected")}
-                                    color="primary"
-                                    onClick={() => {
-                                    }}
-                                />
+                                {this.props.currModel.tags && this.props.currModel.tags.map((tag, key) => (
+                                    <Chip
+                                        key={tag + key}
+                                        label={tag}
+                                        className={classNames(classes.chip, "model-tag selected")}
+                                        color="primary"
+                                        onDelete={() => {
+                                        }}
+                                        deleteIcon={<CloseIcon/>}
+                                        onClick={()=>this.props.removeModelTag( tag )}
+                                    />
+                                ))}
                             </div>
+
+                            <form className="add-model-tag" onSubmit={(event) => this.addNewTagCurrModel(event)}>
+                                <TextField
+                                    label="Enter model tag"
+                                    className={classNames(classes.textField, classes.modelName, classes.w100p)}
+                                    name="tag"
+                                    margin="dense"
+                                    value={this.state.newTagCurrModel}
+                                    onChange={(event) => this.setState({newTagCurrModel: event.target.value})}/>
+
+                                <Button variant="contained" type="submit" size="small" color="primary"
+                                        className={classes.button}>Add</Button>
+                            </form>
 
                             <div className="wrap-stgs-controls">
                                 {
@@ -392,9 +449,8 @@ class ModelEditor extends React.Component {
                                 }
 
                                 <div className="wrap-stgs-item">
-                                    <Button variant="contained" color="primary" onClick={()=>this.addPonterLight()}>
-                                        Add PointerLight
-                                    </Button>
+                                    <Button variant="contained" color="primary" onClick={() => this.addPonterLight()}>Add
+                                        PointerLight</Button>
                                 </div>
 
                                 {
@@ -409,8 +465,7 @@ class ModelEditor extends React.Component {
                     </CardContent>
                 </Card>
 
-
-                <Card style={{ width: '100%' }}>
+                <Card style={{width: '100%'}}>
                     <div ref={this.handleCanvasContainer} className="wrap-viewer"></div>
                 </Card>
             </section>
@@ -454,6 +509,18 @@ export default compose(
 
             clearCurrModel: () => {
                 dispatch({type: ActionTypes.CLEAR_CURR_MODEL});
+            },
+
+            setCurrModelName: (newCurrModelName) => {
+                dispatch({type: ActionTypes.SET_CURR_MODEL_NAME, payload: newCurrModelName});
+            },
+
+            addModelTag: (newTag) => {
+                dispatch({type: ActionTypes.ADD_TAG_CURR_MODEL, payload: newTag});
+            },
+
+            removeModelTag: (removeTag) => {
+                dispatch({type: ActionTypes.REMOVE_TAG_CURR_MODEL, payload: removeTag});
             },
         })
     ),

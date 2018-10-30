@@ -12,5 +12,12 @@ export default keyMirror({
     //
     INIT_CURR_MODEL: null,
     CLEAR_CURR_MODEL: null,
+    SET_CURR_MODEL_NAME: null,
     // SET_MSG: null
+
+    ADD_ACTIVE_TAG: null,
+    CLEAR_ACTIVE_TAGS: null,
+    TOGGLE_ACTIVE_TAG: null,
+    ADD_TAG_CURR_MODEL: null,
+    REMOVE_TAG_CURR_MODEL: null,
 });

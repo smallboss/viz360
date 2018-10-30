@@ -7,6 +7,7 @@ const Model3D = mongoose.model('Model3D');
 
 export function setUpConnection() {
     // mongoose.Promise = require('bluebird');
+    // "apiPrefix": "http://104.248.125.47",
     const db_path = `mongodb://sb:01286693q@ds259499.mlab.com:59499/viz360`;
     // const db_path = `mongodb://${ServerConfig.db.host}:${ServerConfig.db.port}/${ServerConfig.db.name}`;
     mongoose.connect(db_path, { useNewUrlParser: true })
@@ -35,9 +36,17 @@ export function createModel3D( newModel3DData ) {
 
 
 export function getModel3D( _id ) {
-    return Model3D.findOne({ _id }, (err, user) =>{
-        // user.passwordList.unshift(passwordItem);
-        // return user.save();
+    return Model3D.findOne({ _id }, (err, user) =>{});
+}
+
+
+export function editModel3D( modelData ) {
+
+    Model3D.findOne({ _id: modelData._id }, (err, model3d) =>{
+        model3d.name = modelData.name;
+        model3d.url = modelData.url;
+        model3d.tags = modelData.tags;
+        return model3d.save();
     });
 }
 

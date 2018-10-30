@@ -19,6 +19,10 @@ table.model-list{
 }
 
 .model-tag{
+  margin-left: 0 !important;
+  margin-right: 8px !important;
+  height: 23px !important;
+
   *{ pointer-events: none; }
 
   span{ font-size: 0.8rem; }
@@ -47,6 +51,7 @@ table.model-list{
 
 .dropzone{
   cursor: pointer;
+  margin-bottom: 15px;
   transition: background .4s;
 
   &:hover{
@@ -61,3 +66,14 @@ table.model-list{
   transition: color .4s;
 }
 
+.add-model-tag{
+  display: flex;
+  align-items: center;
+  margin-top: 3px;
+
+  button{ margin-right: 0; height: 32px }
+}
+
+.wrap-modal{
+  >*:nth-child(2){ width: 350px; }
+}

@@ -5,11 +5,13 @@ import { combineReducers } from 'redux';
 // import error from  './error';
 import modelList from './modelList';
 import currModel from './currModel';
+import activeTags from './activeTags';
 
 export default combineReducers({
     // routing: routerReducer,
     // user,
     // error,
     modelList,
-    currModel
+    currModel,
+    activeTags
 });

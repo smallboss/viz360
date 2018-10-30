@@ -23,9 +23,9 @@ app.use(fileUpload({
 
 // db.removeAllUsers();
 // db.createModel3D({
-//     name: 'FUR_Sofa001',
-//     url:  'FUR_Sofa001.FBX',
-//     tags: 'sofa'
+//     name: 'FUR_Sofa002',
+//     url:  'FUR_Sofa002.FBX',
+//     tags: ['sofa', 'red', 'tag 3']
 // });
 
 
@@ -102,10 +102,9 @@ app.post('/getModel', (req, res) => {
     console.dir('-----------------/:model3DId/-------------------' + req.body.modelId);
 
     db.getModel3D( req.body.modelId )
-        .then(result => {
-            console.dir("GET MODEL: " + req.body.modelId);
-            res.send(result)
-        });
+        .then(result => res.send(result));
+
+
 });
 
 
@@ -125,6 +124,7 @@ app.post('/removeModel', (req, res) => {
         .then(result => {
 
             fs.unlink( path.resolve(path.dirname('') + ServerConfig.model3DStore + result.url), ()=>{} );
+            fs.unlink( path.resolve(path.dirname('') + ServerConfig.model3DStore + result._id+'.jpeg'), ()=>{} );
 
             db.deleteModel3D( req.body.modelId )
                 .then(result => {
@@ -144,21 +144,32 @@ app.post('/uploadModel', (req, res) => {
         return res.status(400).send('No files were uploaded.');
     }
 
-    const modelName = req.body.modelName;
+    const modelData = JSON.parse(req.body.model);
     const model3DFile = req.files.file;
+    const modelPreview = req.body.filePreview.replace(/^data:image\/jpeg;base64,/, "");
 
+    db.createModel3D({
+        name: modelData.name,
+        url:  modelData.name+'.json',
+        tags: modelData.tags
+    })
+        .then( (result)=>{
+            const modelUrl = result._id+'.json';
 
-    model3DFile.mv( path.resolve(path.dirname('') + ServerConfig.model3DStore + modelName+'.json'), function(err) {
-        if(err)  return res.status(500).send(err);
+            model3DFile.mv( path.resolve(path.dirname('') + ServerConfig.model3DStore + modelUrl), function(err) {
+                if(err)  return res.status(500).send(err);
+            });
 
-        db.createModel3D({
-            name: modelName,
-            url:  modelName+'.json',
-            tags: 'sofa'
+            fs.writeFile(path.resolve(path.dirname('') + ServerConfig.model3DStore + result._id+'.jpeg'), modelPreview, 'base64', (err)=>{console.log(err)});
+
+            // return db.getModel3DList()
+
+            const newModelData = result;
+            newModelData.url = modelUrl;
+
+            return db.editModel3D( newModelData );
         })
-            .then( ()=>{ return db.getModel3DList() })
-            .then( result => res.send(result) );
-    });
+        .then( result => res.send(result) );
 });
 
 
@@ -169,11 +180,16 @@ app.post('/saveModel', (req, res) => {
         return res.status(400).send('No files were uploaded.');
     }
 
-    const modelName = req.body.modelName;
+
     const model3DFile = req.files.file;
+    const modelData = JSON.parse(req.body.model);
+    const modelPreview = req.body.filePreview.replace(/^data:image\/jpeg;base64,/, "");
 
+    db.editModel3D( modelData );
 
-    model3DFile.mv( path.resolve(path.dirname('') + ServerConfig.model3DStore + modelName+'.json'), function(err) {
+    fs.writeFile(path.resolve(path.dirname('') + ServerConfig.model3DStore + modelData._id + '.jpeg'), modelPreview, 'base64', (err)=>{console.log(err)});
+
+    model3DFile.mv( path.resolve(path.dirname('') + ServerConfig.model3DStore + modelData.url), function(err) {
         if(err)  return res.status(500).send(err);
 
         return res.status(200).send("Model saved");

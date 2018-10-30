@@ -10,8 +10,11 @@ import ModelList from './ModelList';
 import ModelEditor from './ModelEditor';
 import ModelViewer from './ModelViewer';
 
+// import * as THREE from 'three-full';
+
 import store from '../redux/store';
 
+// window.THREE = THREE;
 
 class App extends React.Component {
     constructor(props) {

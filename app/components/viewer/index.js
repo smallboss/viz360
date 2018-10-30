@@ -22,7 +22,7 @@ class Viewer {
 
 
         // this.renderer = new THREE.WebGLRenderer({antialias: true, canvas: this.modelViewer });
-        this.renderer = new THREE.WebGLRenderer({antialias: true});
+        this.renderer = new THREE.WebGLRenderer({antialias: true, preserveDrawingBuffer: true});
         // this.renderer.setSize(window.innerWidth * 0.9, window.innerHeight * 0.9);
         this.renderer.setClearColor(0x000000, 1.0);
         // document.getElementById("wrap-canvas").appendChild(this.renderer.domElement);
@@ -44,105 +44,105 @@ class Viewer {
 
 
     initEvents() {
-        this.transformControls.addEventListener( 'dragging-changed', (event) => {
+        this.transformControls.addEventListener('dragging-changed', (event) => {
             this.orbitControls.enabled = !event.value;
         });
 
-        this.transformControls.addEventListener( 'change', ()=>this.controlsChaned=true );
-        this.orbitControls.addEventListener( 'change', ()=>this.controlsChaned=true );
+        this.transformControls.addEventListener('change', () => this.controlsChaned = true);
+        this.orbitControls.addEventListener('change', () => this.controlsChaned = true);
 
-        document.addEventListener('mousedown', ()=>this.controlsChaned=false );
-        document.addEventListener('mouseup', (event)=>this.onMouseup(event) );
-        window.addEventListener('resize', ()=>this.updateDimensions());
+        document.addEventListener('mousedown', () => this.controlsChaned = false);
+        document.addEventListener('mouseup', (event) => this.onMouseup(event));
+        window.addEventListener('resize', () => this.updateDimensions());
     }
 
 
-    onMouseup(event){
+    onMouseup(event) {
 
-        if(this.controlsChaned || this.viewType)  return;
+        if (this.controlsChaned || this.viewType) return;
 
         const mouse = new THREE.Vector2();
 
-        mouse.x = ( event.layerX / this.renderer.domElement.offsetWidth ) * 2 - 1;
-        mouse.y = - ( event.layerY / this.renderer.domElement.offsetHeight ) * 2 + 1;
+        mouse.x = (event.layerX / this.renderer.domElement.offsetWidth) * 2 - 1;
+        mouse.y = -(event.layerY / this.renderer.domElement.offsetHeight) * 2 + 1;
 
-        this.raycaster.setFromCamera( mouse, this.camera );
+        this.raycaster.setFromCamera(mouse, this.camera);
 
 
-        const intersectsLight = this.raycaster.intersectObjects( this.groupLightHelpers.children );
+        const intersectsLight = this.raycaster.intersectObjects(this.groupLightHelpers.children);
 
-        if(intersectsLight.length) {
-            this.transformControls.attach( intersectsLight[0].object.light );
-            this.transformControls.setMode( "translate" );
+        if (intersectsLight.length) {
+            this.transformControls.attach(intersectsLight[0].object.light);
+            this.transformControls.setMode("translate");
         }
-        else{
+        else {
             let intersectsModel = [];
 
-            if(this.model)
-                intersectsModel = this.raycaster.intersectObjects( this.model.children );
+            if (this.model)
+                intersectsModel = this.raycaster.intersectObjects(this.model.children);
 
-            if(intersectsModel.length)  {
-                this.transformControls.attach( intersectsModel[0].object );
+            if (intersectsModel.length) {
+                this.transformControls.attach(intersectsModel[0].object);
                 this.transformControls.setMode("rotate");
             }
-            else{
+            else {
                 const transfControlsArrows = this.transformControls.children[0].children[3].children;
-                const intersectsArrows = this.raycaster.intersectObjects( transfControlsArrows );
+                const intersectsArrows = this.raycaster.intersectObjects(transfControlsArrows);
 
-                if(!intersectsArrows.length) this.transformControls.detach();
+                if (!intersectsArrows.length) this.transformControls.detach();
             }
         }
     }
 
-    addModelToScene( model, viewType ) {
+    addModelToScene(model, viewType) {
         this.model = model;
         this.model.name = `model3d`;
         this.scene.add(this.model);
         this.viewType = viewType;
     }
 
-    transfContrlAttach( mesh ) {
-        this.transformControls.attach( mesh );
+    transfContrlAttach(mesh) {
+        this.transformControls.attach(mesh);
     }
 
-    transfContrlDettach( mesh ) {
-        this.transformControls.detach( mesh );
+    transfContrlDettach(mesh) {
+        this.transformControls.detach(mesh);
     }
 
-    sceneAdd( mesh, name ) {
-        if(name) mesh.name = name;
+    sceneAdd(mesh, name) {
+        if (name) mesh.name = name;
         this.scene.add(mesh);
     }
 
-    removeLight( light ) {
-        const lightHelper = this.groupLightHelpers.children.find( el => el.light && el.light.uuid==light.uuid );
+    removeLight(light) {
+        const lightHelper = this.groupLightHelpers.children.find(el => el.light && el.light.uuid == light.uuid);
 
         console.log('lightHelper', lightHelper);
 
-        this.groupLightHelpers.remove( lightHelper );
-        this.model.remove( light );
+        this.groupLightHelpers.remove(lightHelper);
+        this.model.remove(light);
     }
 
-    getObjectByUuid( uuid ) {
+    getObjectByUuid(uuid) {
         let object = null;
 
-        this.scene.traverse( el => {
-            if(el.uuid==uuid) object = el;
+        this.scene.traverse(el => {
+            if (el.uuid == uuid) object = el;
         });
 
         return object;
     }
 
-    addLightHelper( light, name ) {
+    addLightHelper(light, name) {
         const lightHelper = new THREE.PointLightHelper(light, 5);
-        if(lightHelper) lightHelper.name = name;
+        if (lightHelper) lightHelper.name = name;
         this.groupLightHelpers.add(lightHelper);
     }
 
     updateDimensions() {
         const wrapperCanvas = this.renderer.domElement.parentElement;
 
-        if(wrapperCanvas) {
+        if (wrapperCanvas) {
             this.renderer.setSize(wrapperCanvas.offsetWidth, wrapperCanvas.offsetHeight);
             this.camera.aspect = wrapperCanvas.offsetWidth / wrapperCanvas.offsetHeight;
             this.camera.updateProjectionMatrix();
@@ -167,6 +167,15 @@ class Viewer {
         wrapCanvas.appendChild(this.renderer.domElement);
         this.updateDimensions();
         this.startAnimation();
+    }
+
+    getPreviewImg() {
+        return this.renderer.domElement.toDataURL('image/jpeg', 1.0);
+    }
+
+    updateCanvasSizeDimensions() {
+        this.camera.aspect = this.renderer.domElement.offsetWidth / this.renderer.domElement.offsetHeight;
+        this.camera.updateProjectionMatrix();
     }
 
     detach(wrapCanvas) {

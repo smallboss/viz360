@@ -21,6 +21,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 import DeleteIcon from '@material-ui/icons/Delete';
+import CloseIcon from '@material-ui/icons/Close';
 import DoneIcon from '@material-ui/icons/Done';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 
@@ -55,7 +56,7 @@ const styles = theme => ({
     chip: {
         margin: 4,
         padding: '5px 0',
-        height: 'auto'
+        height: 23
     },
     textField: {
         marginLeft: theme.spacing.unit,
@@ -87,7 +88,9 @@ class ModelList extends React.Component {
 
         this.state = {
             isModalOpen: false,
-            uploadModelName: ''
+            uploadModelName: '',
+            tagNewModel: '',
+            tagsNewModel: [],
         };
 
         this.props.initModelList();
@@ -104,10 +107,6 @@ class ModelList extends React.Component {
         Utils.copyToClipboard(model3DLink);
     }
 
-    toggleTab( event ) {
-        event.target.classList.toggle('selected');
-    }
-
 
     handleClickOpen() {
         this.setState({ isModalOpen: true });
@@ -120,8 +119,6 @@ class ModelList extends React.Component {
 
     uploadModel() {
         this.converModeltToJSON( this.uploadModelFiles[0].preview, this.uploadModelFiles[0].name, (modelJSON)=>this.uploadModelJSON( modelJSON )  );
-
-        this.props.history.push(`/${this.state.uploadModelName}`);
     }
 
 
@@ -132,29 +129,32 @@ class ModelList extends React.Component {
         const formData = new FormData();
         formData.append('modelName', this.state.uploadModelName);
         formData.append('file', blob);
+        formData.append('tags', JSON.stringify(this.state.tagsNewModel));
 
         const newCurrModel = {
             name: this.state.uploadModelName,
             url: window.URL.createObjectURL(blob),
-            tags: 'sofa'
+            tags: this.state.tagsNewModel
         };
 
         this.props.initCurrModel( newCurrModel );
 
+        this.props.history.push(`/admin_panel/${this.state.uploadModelName}`);
 
-        fetch(`${ServerConfig.apiPrefix}:${ServerConfig.serverPort}/uploadModel`, {
-            method: 'POST',
-            contentType: false,
-            body: formData,
-        })
-            .then((res) => {
-                if (res.status == 200) return res.json();
-            })
-            .then((data) => {
-            })
-            .catch(
-                error => console.log(error) // Handle the error response object
-            );
+
+        // fetch(`${ServerConfig.apiPrefix}:${ServerConfig.serverPort}/uploadModel`, {
+        //     method: 'POST',
+        //     contentType: false,
+        //     body: formData,
+        // })
+        //     .then((res) => {
+        //         if (res.status == 200) return res.json();
+        //     })
+        //     .then((data) => {
+        //     })
+        //     .catch(
+        //         error => console.log(error) // Handle the error response object
+        //     );
     }
 
 
@@ -203,7 +203,6 @@ class ModelList extends React.Component {
         model.add(ambientLight);
     }
 
-
     onDrop( acceptedFiles ) {
         this.uploadModelFiles = [];
 
@@ -215,6 +214,53 @@ class ModelList extends React.Component {
         this.forceUpdate();
     }
 
+    getTagList() {
+        const tagList = [];
+
+        this.props.modelList.forEach( model => {
+            model.tags.forEach( tag => {
+                if(!tagList.includes(tag))  tagList.push(tag);
+            });
+        });
+
+        return tagList;
+    };
+
+    activeModelList() {
+        const filteredModelList = [];
+
+        if(!this.props.activeTags.length)  return this.props.modelList;
+
+        this.props.modelList.forEach( model => {
+            for(let i=0; i<this.props.activeTags.length; i++){
+                const activeTag = this.props.activeTags[i];
+
+                if(model.tags.includes(activeTag)) {
+                    filteredModelList.push( model );
+                    break;
+                }
+            }
+        });
+
+        return filteredModelList
+    }
+
+    addNewModelTag(event) {
+        event.preventDefault();
+
+        const newTagInput = event.target.elements['tag'];
+        const newTag = newTagInput.value;
+        const newTagsNewModel = this.state.tagsNewModel;
+
+        if(!this.state.tagsNewModel.includes(newTag)) newTagsNewModel.push( newTag );
+
+        this.setState({
+            tagsNewModel: [...newTagsNewModel],
+            tagNewModel: '',
+        });
+
+        newTagInput.focus();
+    }
 
     render() {
         const { classes } = this.props;
@@ -251,89 +297,36 @@ class ModelList extends React.Component {
             <section className="admin-panel">
 
                 <div className="wrap-admin-panel-header">
-
                     <div className="wrap-tag-list">
-                        <Chip
-                            label="Tag 1"
-                            className={classNames(classes.chip, "model-tag")}
-                            onDelete={()=>{}}
-                            deleteIcon={<DoneIcon />}
-                            onClick={(event)=>this.toggleTab(event)}
-                        />
 
                         <Chip
-                            label="Selected Tag 2"
+                            key='clear-active-tags'
+                            label="Reset Filter"
                             className={classNames(classes.chip, "model-tag selected")}
-                            color="primary"
+                            color="secondary"
                             onDelete={()=>{}}
-                            deleteIcon={<DoneIcon />}
-                            onClick={()=>{}}
+                            deleteIcon={<CloseIcon />}
+                            onClick={(event)=>this.props.clearActiveTags()}
                         />
 
-                        <Chip
-                            label="Tag 3"
-                            className={classNames(classes.chip, "model-tag")}
-                            onDelete={()=>{}}
-                            deleteIcon={<DoneIcon />}
-                            onClick={()=>{}}
-                        />
+                        {this.getTagList().map( (tag, key) => (
+                            <Chip
+                                key={tag+key}
+                                label={ tag }
+                                className={classNames(classes.chip, `model-tag ${ this.props.activeTags.includes(tag) ? "selected" : ""}` )}
+                                color={ this.props.activeTags.includes(tag) ? "primary" : "default" }
+                                onDelete={()=>{}}
+                                deleteIcon={<DoneIcon />}
+                                onClick={(event)=>this.props.toggleActiveTag(tag)}
+                            />
+                        ))}
 
-                        <Chip
-                            label="Tag 3"
-                            className={classNames(classes.chip, "model-tag")}
-                            onDelete={()=>{}}
-                            deleteIcon={<DoneIcon />}
-                            onClick={()=>{}}
-                        />
-
-                        <Chip
-                            label="Tag 3"
-                            className={classNames(classes.chip, "model-tag")}
-                            onDelete={()=>{}}
-                            deleteIcon={<DoneIcon />}
-                            onClick={()=>{}}
-                        />
-
-                        <Chip
-                            label="Selected Tag 4"
-                            className={classNames(classes.chip, "model-tag selected")}
-                            color="primary"
-                            onDelete={()=>{}}
-                            deleteIcon={<DoneIcon />}
-                            onClick={()=>{}}
-                        />
-
-                        <Chip
-                            label="Selected Tag 2"
-                            className={classNames(classes.chip, "model-tag selected")}
-                            color="primary"
-                            onDelete={()=>{}}
-                            deleteIcon={<DoneIcon />}
-                            onClick={()=>{}}
-                        />
-
-                        <Chip
-                            label="Selected Tag 5"
-                            className={classNames(classes.chip, "model-tag selected")}
-                            color="primary"
-                            onDelete={()=>{}}
-                            deleteIcon={<DoneIcon />}
-                            onClick={()=>{}}
-                        />
-
-                        <Chip
-                            label="Tag 4"
-                            className={classNames(classes.chip, "model-tag")}
-                            onDelete={()=>{}}
-                            deleteIcon={<DoneIcon />}
-                            onClick={()=>{}}
-                        />
                     </div>
-
 
                     <div className="wrap-loadbtn-model">
                         <Button variant="contained" color="primary" className={classes.button} onClick={()=>this.handleClickOpen()}>Load model</Button>
                         <Dialog
+                            className="wrap-modal"
                             open={this.state.isModalOpen}
                             onClose={()=>this.handleClose()}
                             aria-labelledby="alert-dialog-title"
@@ -346,11 +339,38 @@ class ModelList extends React.Component {
                                         label="Model name"
                                         className={classNames(classes.textField, classes.modelName, classes.w100p)}
                                         margin="dense"
+                                        value={ this.state.uploadModelName }
                                         onChange={ (event)=>this.setState({ uploadModelName: event.target.value }) }/>
 
                                     <Dropzone onDrop={this.onDrop.bind(this)} className="dropzone" >
                                         <p className="dropzone-text">Drop files here or click to upload.</p>
                                     </Dropzone>
+
+                                    <div className="wrap-tag-list">
+                                        {this.state.tagsNewModel.map( (tag, key) => (
+                                            <Chip
+                                                key={tag+key}
+                                                label={ tag }
+                                                className={classNames(classes.chip, "model-tag selected" )}
+                                                color="primary"
+                                                onDelete={()=>{}}
+                                                deleteIcon={<CloseIcon />}
+                                                onClick={(event)=>this.setState({ tagsNewModel: this.state.tagsNewModel.filter( elTag=>elTag!=tag ) })}
+                                            />
+                                        ))}
+                                    </div>
+
+                                    <form className="add-model-tag" onSubmit={(event)=>this.addNewModelTag(event)}>
+                                        <TextField
+                                            label="Enter model tag"
+                                            className={classNames(classes.textField, classes.modelName, classes.w100p)}
+                                            name="tag"
+                                            margin="dense"
+                                            value={ this.state.tagNewModel }
+                                            onChange={ (event)=>this.setState({ tagNewModel: event.target.value }) }/>
+
+                                        <Button variant="contained" type="submit" size="small" color="primary" className={classes.button}>Add</Button>
+                                    </form>
 
                                 </DialogContentText>
 
@@ -364,11 +384,21 @@ class ModelList extends React.Component {
                 <Paper className="wrap-table-list">
                     <Table className="model-list">
                         <TableBody>
-                            {this.props.modelList.map(model => {
+                            {this.activeModelList().map(model => {
                                 return (
                                     <TableRow key={model._id}>
                                         <TableCell component="th" scope="row">
                                             <h2>{model.name}</h2>
+                                            <div className="wrap-tag-list">
+                                                {model.tags.map( (tag, key) => (
+                                                    <Chip
+                                                        key={model._id + key}
+                                                        label={tag}
+                                                        className={classNames(classes.chip, "model-tag selected")}
+                                                        color="primary"
+                                                    />
+                                                ))}
+                                            </div>
                                         </TableCell>
                                         <TableCell className="small-t_cell">
                                             <Button
@@ -414,9 +444,10 @@ export default compose(
     connect(
         state => ({
             modelList: state.modelList,
+            activeTags: state.activeTags,
         }),
         dispatch => ({
-            initModelList: (initQuizData) => {
+            initModelList: () => {
 
                 const myInit = {
                     method: 'GET',
@@ -470,6 +501,13 @@ export default compose(
 
             initCurrModel: ( currModel ) => {
                 dispatch({type: ActionTypes.INIT_CURR_MODEL, payload: currModel});
+            },
+
+            toggleActiveTag: ( toggleTag ) => {
+                dispatch({type: ActionTypes.TOGGLE_ACTIVE_TAG, payload: toggleTag});
+            },
+            clearActiveTags: () => {
+                dispatch({type: ActionTypes.CLEAR_ACTIVE_TAGS});
             }
         })
     ),

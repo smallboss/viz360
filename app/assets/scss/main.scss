@@ -19,7 +19,10 @@ body {
 section{
   padding: 20px;
   height: 100vh;
-  transition: filter .3s;
+  transition: filter  .3s,
+              opacity .3s;
+
+  &.hide{ opacity: 0; transition: 0s; }
 }
 
 .wrap-reloader{
@@ -37,18 +40,44 @@ section{
     pointer-events: none;
     transition: opacity .6s;
 
-    +section{ transition: filter .6s; }
+    +section{
+      transition: filter .6s,
+                  opacity .6s;
+    }
   }
 
   &:not(.hide){
-    +section{ filter: blur(3px); }
+    +section{ opacity: 0; filter: blur(3px); }
   }
 }
 
 
 
+#img{
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  opacity: .7;
+  pointer-events: none;
+  width: 50%;
+  height: 50%;
+}
+
+canvas.fullscreen{
+  opacity: 0;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100% !important;
+  height: 100% !important;
+}
 
 
+.wrap-reloader{
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center;
+}
 
 $colors: (
         1: #1D7AA2,

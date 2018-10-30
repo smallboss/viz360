@@ -150,7 +150,7 @@ const config = {
     },
     plugins: [
         new webpack.ProvidePlugin({
-            // THREE: 'three',
+            // THREE: 'three-full',
             // ...
         }),
         new webpack.NamedModulesPlugin(),

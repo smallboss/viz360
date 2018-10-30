@@ -10,6 +10,8 @@ const initialState = {
     // user: getLocalUser(),
     // error: '',
     modelList: [],
+    currModel: [],
+    activeTags: [],
 };
 
 // const routMiddleware = routerMiddleware(browserHistory);
