@@ -130,6 +130,21 @@ class ModelEditor extends React.Component {
                                     ? ServerConfig.apiPrefix + ':' + ServerConfig.serverPort + ServerConfig.model3DStore + this.props.currModel._id + '/model.json'
                                     : locModelUrl;
 
+
+        // const setPath = ServerConfig.apiPrefix + ':' + ServerConfig.serverPort + ServerConfig.model3DStore;
+        //
+        // new THREE.FBXLoader().load(setPath+'/Hands.FBX', (model) => {
+        //
+        //     console.log('model ------------', model);
+        //
+        // }, (progress) => {
+        //     console.log('progress', progress);
+        // }, (error) => {
+        //     console.log('error', error);
+        // });
+
+
+
         this.loaderObject.load(modelDownloadUrl, (model) => {
                 this.model = model;
                 console.log('LOADED MODEL: ', this.model);
@@ -157,49 +172,46 @@ class ModelEditor extends React.Component {
                 document.getElementById('preloader').classList.add('hide');
             },
             (xhr) => {
-                // console.log((xhr.loaded / xhr.total * 100) + '% loaded')
+                console.log((xhr.loaded / xhr.total * 100) + '% loaded')
             },
             (err) => {
                 console.log('An error happened ', err)
             }
         );
 
-        // const setPath = ServerConfig.apiPrefix + ':' + ServerConfig.serverPort + ServerConfig.model3DStore;
+
         //
         // THREE.Loader.Handlers.add( /\.dds$/i, new THREE.DDSLoader() );
         // new THREE.MTLLoader()
         //     .setPath( setPath )
-        //     .load( 'GUN_OBJ.mtl', ( materials ) => {
+        //     .load( 'male02_dds.mtl', ( materials ) => {
         //         materials.preload();
         //         new THREE.OBJLoader()
         //             .setMaterials( materials )
         //             .setPath( setPath )
-        //             .load( 'GUN_OBJ.obj', ( model ) => {
+        //             .load( 'male02.obj', ( model ) => {
         //                 this.model = model;
         //                 console.log('LOADED MODEL: ', this.model);
         //                 Viewer.addModelToScene(this.model);
         //
         //                 document.getElementById('preloader').classList.add('hide');
         //
-        //                 // const lightObjects = [];
-        //                 // const meshObjects = [];
-        //                 //
-        //                 // this.model.traverse(el => {
-        //                 //     if (el.type.includes('Light')) lightObjects.push(el);
-        //                 //     else if (el.type.includes('Mesh')) meshObjects.push(el)
-        //                 // });
-        //                 //
-        //                 //
-        //                 // this.model.traverse(el => {
-        //                 //     if (el.type.includes('PointLight')) Viewer.addLightHelper(el);
-        //                 // });
-        //                 //
-        //                 //
+        //                 const lightObjects = [];
+        //                 const meshObjects = [];
+        //
+        //                 this.model.traverse(el => {
+        //                     if (el.type.includes('Light')) lightObjects.push(el);
+        //                     else if (el.type.includes('Mesh')) meshObjects.push(el)
+        //                 });
+        //
+        //                 this.model.traverse(el => {
+        //                     if (el.type.includes('PointLight')) Viewer.addLightHelper(el);
+        //                 });
+        //
         //                 // this.setState({
         //                 //     lightObjects: lightObjects,
         //                 //     meshObjects: meshObjects
         //                 // });
-        //                 // Viewer.addModelToScene( object );
         //             }, ()=>{}, err=>{console.log('ERROR: ', err)} );
         //     } );
     }

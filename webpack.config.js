@@ -34,7 +34,7 @@ const config = {
             'Access-Control-Allow-Origin': '*'
         },
         // host: '104.248.125.47',
-        host: '0.0.0.0',
+        host: 'localhost',
         hot: true,
         contentBase: resolve(__dirname, 'build'),
         historyApiFallback: true,
@@ -150,7 +150,7 @@ const config = {
     },
     plugins: [
         new webpack.ProvidePlugin({
-            THREE: 'three-full',
+            // THREE: 'three-full',
             // ...
         }),
         new webpack.NamedModulesPlugin(),

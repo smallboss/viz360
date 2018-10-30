@@ -2,7 +2,7 @@ class Viewer {
     constructor() {
         this.scene = new THREE.Scene();
         window.scene = this.scene;
-        this.scene.background = new THREE.Color(0xa0f0f0);
+        this.scene.background = new THREE.Color(0xf6f6f6);
         // this.scene.fog = new THREE.Fog( 0xa0f0f0, 200, 1000 );
 
         this.camera = new THREE.PerspectiveCamera(45, window.innerWidth * 0.9 / window.innerHeight * 0.9, 1, 10000);
@@ -21,7 +21,6 @@ class Viewer {
         this.scene.add(this.groupLightHelpers);
 
 
-        // this.renderer = new THREE.WebGLRenderer({antialias: true, canvas: this.modelViewer });
         this.renderer = new THREE.WebGLRenderer({antialias: true, preserveDrawingBuffer: true});
         // this.renderer.setSize(window.innerWidth * 0.9, window.innerHeight * 0.9);
         this.renderer.setClearColor(0x000000, 1.0);
