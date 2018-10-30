@@ -194,6 +194,8 @@ class ModelList extends React.Component {
 
         model.traverse( el => {
            if(el.material) {
+               el.geometry.center();
+
                if(el.material.length)  el.material.forEach( el => el.side=THREE.DoubleSide );
                else el.material.side=THREE.DoubleSide;
            }
@@ -205,7 +207,7 @@ class ModelList extends React.Component {
 
         const pointLight = new THREE.PointLight(0xff5555, 1.7, 800);
         pointLight.name = 'PointLight';
-        pointLight.position.set(0, 200, 150);
+        pointLight.position.set(0, 180, 150);
         pointLight.updateMatrix();
         model.add(pointLight);
     }
@@ -340,51 +342,47 @@ class ModelList extends React.Component {
                         <Dialog
                             className="wrap-modal"
                             open={this.state.isModalOpen}
-                            onClose={()=>this.handleClose()}
-                            aria-labelledby="alert-dialog-title"
-                            aria-describedby="alert-dialog-description" >
+                            onClose={()=>this.handleClose()} >
 
                             <DialogTitle className={classes.uploadModalTitle}>Upload model</DialogTitle>
                             <DialogContent>
-                                <DialogContentText id="alert-dialog-description">
+
+                                <TextField
+                                    label="Model name*"
+                                    className={classNames(classes.textField, classes.modelName, classes.w100p)}
+                                    margin="dense"
+                                    value={ this.state.uploadModelName }
+                                    onChange={ (event)=>this.setState({ uploadModelName: event.target.value }) }/>
+
+                                <Dropzone onDrop={this.onDrop.bind(this)} className="dropzone" >
+                                    <p ref={el=>this.wrapFileNames=el} className="dropzone-text">Drop files here or click to upload.</p>
+                                </Dropzone>
+
+                                <div className="wrap-tag-list">
+                                    {this.state.tagsNewModel.map( (tag, key) => (
+                                        <Chip
+                                            key={tag+key}
+                                            label={ tag }
+                                            className={classNames(classes.chip, "model-tag selected" )}
+                                            color="primary"
+                                            onDelete={()=>{}}
+                                            deleteIcon={<CloseIcon />}
+                                            onClick={(event)=>this.setState({ tagsNewModel: this.state.tagsNewModel.filter( elTag=>elTag!=tag ) })}
+                                        />
+                                    ))}
+                                </div>
+
+                                <form className="add-model-tag" onSubmit={(event)=>this.addNewModelTag(event)}>
                                     <TextField
-                                        label="Model name*"
+                                        label="Enter model tag"
                                         className={classNames(classes.textField, classes.modelName, classes.w100p)}
+                                        name="tag"
                                         margin="dense"
-                                        value={ this.state.uploadModelName }
-                                        onChange={ (event)=>this.setState({ uploadModelName: event.target.value }) }/>
+                                        value={ this.state.tagNewModel }
+                                        onChange={ (event)=>this.setState({ tagNewModel: event.target.value }) }/>
 
-                                    <Dropzone onDrop={this.onDrop.bind(this)} className="dropzone" >
-                                        <p ref={el=>this.wrapFileNames=el} className="dropzone-text">Drop files here or click to upload.</p>
-                                    </Dropzone>
-
-                                    <div className="wrap-tag-list">
-                                        {this.state.tagsNewModel.map( (tag, key) => (
-                                            <Chip
-                                                key={tag+key}
-                                                label={ tag }
-                                                className={classNames(classes.chip, "model-tag selected" )}
-                                                color="primary"
-                                                onDelete={()=>{}}
-                                                deleteIcon={<CloseIcon />}
-                                                onClick={(event)=>this.setState({ tagsNewModel: this.state.tagsNewModel.filter( elTag=>elTag!=tag ) })}
-                                            />
-                                        ))}
-                                    </div>
-
-                                    <form className="add-model-tag" onSubmit={(event)=>this.addNewModelTag(event)}>
-                                        <TextField
-                                            label="Enter model tag"
-                                            className={classNames(classes.textField, classes.modelName, classes.w100p)}
-                                            name="tag"
-                                            margin="dense"
-                                            value={ this.state.tagNewModel }
-                                            onChange={ (event)=>this.setState({ tagNewModel: event.target.value }) }/>
-
-                                        <Button variant="contained" type="submit" size="small" color="primary" className={classes.button}>Add</Button>
-                                    </form>
-
-                                </DialogContentText>
+                                    <Button variant="contained" type="submit" size="small" color="primary" className={classes.button}>Add</Button>
+                                </form>
 
                                 { isUploadDisabled() }
                             </DialogContent>
