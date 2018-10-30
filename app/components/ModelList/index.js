@@ -102,7 +102,6 @@ class ModelList extends React.Component {
 
     onCopyLink(modelId) {
         const model3DLink = `${location.origin}/${modelId}`;
-        console.log('Copy Link: ', model3DLink);
 
         Utils.copyToClipboard(model3DLink);
     }
@@ -123,8 +122,6 @@ class ModelList extends React.Component {
 
 
     uploadModelJSON( modelJSON ) {
-
-        console.log('uploadModelJSON', modelJSON);
 
         const json = JSON.stringify(modelJSON);
         const blob = new Blob([json], {type: "octet/stream"});
@@ -218,7 +215,6 @@ class ModelList extends React.Component {
         this.wrapFileNames.innerText = '';
 
         acceptedFiles.forEach(file => {
-            console.log('FILE: ', file);
             this.wrapFileNames.innerText += ' ' + file.name+',';
             this.uploadModelFiles.push( file );
         });
@@ -265,6 +261,8 @@ class ModelList extends React.Component {
         const newTagInput = event.target.elements['tag'];
         const newTag = newTagInput.value;
         const newTagsNewModel = this.state.tagsNewModel;
+
+        if(!newTag)  return;
 
         if(!this.state.tagsNewModel.includes(newTag)) newTagsNewModel.push( newTag );
 
@@ -478,7 +476,6 @@ export default compose(
                         if (res.status == 200) return res.json();
                     })
                     .then((modelList) => {
-                        console.log('modelList: ', modelList);
 
                         modelList.forEach(model => {
                             model.preview = new Image();
@@ -492,7 +489,6 @@ export default compose(
                     });
             },
             deleteModel: ( modelId ) => {
-                console.log('deleteModel ---------------------- ', modelId);
 
                 const myInit = {
                     method: 'POST',

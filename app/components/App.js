@@ -29,8 +29,6 @@ class App extends React.Component {
 
     render() {
 
-        console.log('Utils.getPrefixLink()', Utils.getPrefixLink());
-
         return (
             <Provider store={store}>
                 <Router>

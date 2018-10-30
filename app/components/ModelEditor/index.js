@@ -147,7 +147,6 @@ class ModelEditor extends React.Component {
 
         this.loaderObject.load(modelDownloadUrl, (model) => {
                 this.model = model;
-                console.log('LOADED MODEL: ', this.model);
                 Viewer.addModelToScene(this.model);
 
                 const lightObjects = [];
@@ -433,8 +432,15 @@ class ModelEditor extends React.Component {
 
     addNewTagCurrModel(event) {
         event.preventDefault();
-        this.props.addModelTag(this.state.newTagCurrModel);
-        this.setState({newTagCurrModel: ''});
+
+        const newTagInput = event.target.elements['tag'];
+
+        if(this.state.newTagCurrModel) {
+            this.props.addModelTag(this.state.newTagCurrModel);
+            this.setState({newTagCurrModel: ''});
+        }
+
+        newTagInput.focus();
     }
 
 
@@ -503,8 +509,7 @@ class ModelEditor extends React.Component {
                                     value={this.state.newTagCurrModel}
                                     onChange={(event) => this.setState({newTagCurrModel: event.target.value})}/>
 
-                                <Button variant="contained" type="submit" size="small" color="primary"
-                                        className={classes.button}>Add</Button>
+                                <Button variant="contained" type="submit" size="small" color="primary" className={classes.button}>Add</Button>
                             </form>
 
                             <div className="wrap-stgs-controls">
@@ -565,8 +570,6 @@ export default compose(
                         if (res.status == 200) return res.json();
                     })
                     .then((currModel) => {
-                        console.log('currModel: ', currModel);
-
                         dispatch({type: ActionTypes.INIT_CURR_MODEL, payload: currModel});
                     })
                     .catch((reject) => {

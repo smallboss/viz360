@@ -41,8 +41,6 @@ class ModelViewer extends React.Component {
         const posLastSlash = location.pathname.lastIndexOf('/');
         const modelId = location.pathname.substring(posLastSlash + 1);
 
-        console.log('getCurrModel', this.props.currModel.url);
-
         if (!this.props.currModel.url) this.props.initCurrModel(modelId);
         else this.loadModel(this.props.currModel.url, true);
     }
@@ -53,13 +51,11 @@ class ModelViewer extends React.Component {
         const previewImg = `${ServerConfig.apiPrefix + ':' + ServerConfig.serverPort + ServerConfig.model3DStore + this.props.currModel._id}/preview.jpeg`;
         document.getElementById('preloader').classList.remove('hide');
         document.getElementById('preloader').style['background-image'] = `url(${previewImg})`;
-        // document.getElementById('preloader').classList.remove('hide');
 
-        const modelDownloadUrl = ServerConfig.apiPrefix + ':' + ServerConfig.serverPort + ServerConfig.model3DStore + modelUrl;
+        const modelDownloadUrl = ServerConfig.apiPrefix + ':' + ServerConfig.serverPort + ServerConfig.model3DStore + this.props.currModel._id + '/model.json';
 
         this.loaderObject.load(modelDownloadUrl, (model) => {
                 this.model = model;
-                console.log('LOADED MODEL: ', this.model);
                 Viewer.addModelToScene(this.model, 'viewer');
 
                 document.getElementById('preloader').classList.add('hide');
@@ -126,8 +122,6 @@ export default compose(
                         if (res.status == 200) return res.json();
                     })
                     .then((currModel) => {
-                        console.log('currModel: ', currModel);
-
                         dispatch({type: ActionTypes.INIT_CURR_MODEL, payload: currModel});
                     })
                     .catch((reject) => {

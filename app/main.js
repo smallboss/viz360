@@ -8,7 +8,6 @@ import Root from './config/Root';
 
 
 const render = (Component) => {
-    console.log('mainjs');
 
     ReactDOM.render(
         <App/>,
