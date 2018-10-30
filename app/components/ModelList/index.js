@@ -467,6 +467,11 @@ export default compose(
                     .then((modelList) => {
                         console.log('modelList: ', modelList);
 
+                        modelList.forEach(model => {
+                            model.preview = new Image();
+                            model.preview.src = `${ServerConfig.apiPrefix + ':' + ServerConfig.serverPort + ServerConfig.model3DStore + model._id}.jpeg`;
+                        });
+
                         dispatch({type: ActionTypes.INIT_MODEL_LIST, payload: modelList});
                     })
                     .catch((reject) => {

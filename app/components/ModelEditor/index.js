@@ -107,8 +107,6 @@ class ModelEditor extends React.Component {
         const posLastSlash = location.pathname.lastIndexOf('/');
         const modelId = location.pathname.substring(posLastSlash + 1);
 
-        console.log('this.props.currModel.url', this.props.currModel.url);
-
         if (!this.props.currModel.url) this.props.initCurrModel(modelId);
         else this.loadModel(this.props.currModel.url, true);
     }
@@ -117,7 +115,13 @@ class ModelEditor extends React.Component {
     loadModel(modelUrl, isLolModel) {
 
         if (!isLolModel) {
-            const previewImg = `${ServerConfig.apiPrefix + ':' + ServerConfig.serverPort + ServerConfig.model3DStore + this.props.currModel._id}.jpeg`;
+            let previewImg = `${ServerConfig.apiPrefix + ':' + ServerConfig.serverPort + ServerConfig.model3DStore + this.props.currModel._id}.jpeg`;
+
+            const modelIdFromUrl = location.pathname.substr(location.pathname.lastIndexOf('/')+1);
+            const currModel = this.props.modelList.find(model => model._id==modelIdFromUrl);
+
+            if(currModel)  previewImg = currModel.preview.src;
+
             document.getElementById('preloader').classList.remove('hide');
             document.getElementById('preloader').style['background-image'] = `url(${previewImg})`;
         }
@@ -477,6 +481,7 @@ class ModelEditor extends React.Component {
 export default compose(
     connect(
         state => ({
+            modelList: state.modelList,
             currModel: state.currModel,
         }),
         dispatch => ({
