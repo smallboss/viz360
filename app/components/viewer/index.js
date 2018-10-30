@@ -5,16 +5,16 @@ class Viewer {
         this.scene.background = new THREE.Color(0xf6f6f6);
         // this.scene.fog = new THREE.Fog( 0xa0f0f0, 200, 1000 );
 
-        this.camera = new THREE.PerspectiveCamera(45, window.innerWidth * 0.9 / window.innerHeight * 0.9, 1, 10000);
+        this.camera = new THREE.PerspectiveCamera(45, window.innerWidth * 0.9 / window.innerHeight * 0.9, 1, 100000);
         this.camera.name = "PerspectiveCamera";
         this.camera.position.set(100, 200, 300);
         this.scene.add(this.camera);
 
-        // const grid = new THREE.GridHelper(2000, 20, 0x000000, 0x000000);
-        // grid.name = "GridHelper";
-        // grid.material.opacity = 0.2;
-        // grid.material.transparent = true;
-        // this.scene.add(grid);
+        const grid = new THREE.GridHelper(2000, 20, 0x000000, 0x000000);
+        grid.name = "GridHelper";
+        grid.material.opacity = 0.2;
+        grid.material.transparent = true;
+        this.scene.add(grid);
 
         this.groupLightHelpers = new THREE.Group();
         this.groupLightHelpers.name = 'GroupLightHelpers';
@@ -30,6 +30,7 @@ class Viewer {
 
         // if(this.state.isAdmin){
         this.transformControls = new THREE.TransformControls(this.camera, this.renderer.domElement);
+        this.transformControls.name = 'TransformControls';
         this.transformControls.setSpace('local');
         this.scene.add(this.transformControls);
 
@@ -98,6 +99,12 @@ class Viewer {
         this.model.name = `model3d`;
         this.scene.add(this.model);
         this.viewType = viewType;
+
+        const b = new THREE.Box3().setFromObject(model);
+        const vec = new THREE.Vector3();
+        b.getCenter(vec);
+        model.position.sub(vec);
+        model.updateMatrix();
     }
 
     transfContrlAttach(mesh) {
@@ -168,8 +175,17 @@ class Viewer {
         this.startAnimation();
     }
 
+    hideHelpElements() {
+        this.scene.children.forEach( el => {
+            if(!el.name.includes('model3d') && !el.name.includes('Camera')) el.visible = false;
+        });
+    }
+
     getPreviewImg() {
-        return this.renderer.domElement.toDataURL('image/jpeg', 1.0);
+        const canvasImg = this.renderer.domElement.toDataURL('image/jpeg', 1.0);
+        setTimeout(()=>this.scene.children.forEach( el => el.visible = true), 1);
+
+        return canvasImg;
     }
 
     updateCanvasSizeDimensions() {

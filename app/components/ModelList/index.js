@@ -191,7 +191,7 @@ class ModelList extends React.Component {
 
         model.traverse( el => {
            if(el.material) {
-               el.geometry.center();
+               // el.geometry.center();
 
                if(el.material.length)  el.material.forEach( el => el.side=THREE.DoubleSide );
                else el.material.side=THREE.DoubleSide;

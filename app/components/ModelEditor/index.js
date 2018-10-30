@@ -131,7 +131,7 @@ class ModelEditor extends React.Component {
                                     : locModelUrl;
 
 
-        // const setPath = ServerConfig.apiPrefix + ':' + ServerConfig.serverPort + ServerConfig.model3DStore;
+        const setPath = ServerConfig.apiPrefix + ':' + ServerConfig.serverPort + ServerConfig.model3DStore;
         //
         // new THREE.FBXLoader().load(setPath+'/Hands.FBX', (model) => {
         //
@@ -146,6 +146,7 @@ class ModelEditor extends React.Component {
 
 
         this.loaderObject.load(modelDownloadUrl, (model) => {
+
                 this.model = model;
                 Viewer.addModelToScene(this.model);
 
@@ -179,7 +180,7 @@ class ModelEditor extends React.Component {
         );
 
 
-        //
+
         // THREE.Loader.Handlers.add( /\.dds$/i, new THREE.DDSLoader() );
         // new THREE.MTLLoader()
         //     .setPath( setPath )
@@ -373,49 +374,56 @@ class ModelEditor extends React.Component {
 
     saveModel() {
 
-        document.getElementById('preloader').classList.remove('hide');
+        Viewer.hideHelpElements();
 
-        const json = JSON.stringify(this.model);
-        const blob = new Blob([json], {type: "octet/stream"});
+        setTimeout(()=>{
 
-        this.canvasContainer.style['background-image'] = `url(${Viewer.getPreviewImg()})`;
-        Viewer.renderer.domElement.classList.add('fullscreen');
-        Viewer.updateCanvasSizeDimensions();
+            document.getElementById('preloader').classList.remove('hide');
 
-        const modelPreview = Viewer.getPreviewImg();
+            const json = JSON.stringify(this.model);
+            const blob = new Blob([json], {type: "octet/stream"});
 
-        const formData = new FormData();
-        formData.append('model', JSON.stringify(this.props.currModel));
-        formData.append('file', blob);
-        formData.append('filePreview', modelPreview);
+            this.canvasContainer.style['background-image'] = `url(${Viewer.getPreviewImg()})`;
+            Viewer.renderer.domElement.classList.add('fullscreen');
+            Viewer.updateCanvasSizeDimensions();
+            Viewer.hideHelpElements();
 
-        document.getElementById('preloader').style['background-image'] = `url(${modelPreview})`;
+            const modelPreview = Viewer.getPreviewImg();
 
 
-        Viewer.renderer.domElement.classList.remove('fullscreen');
-        setTimeout(()=>Viewer.updateCanvasSizeDimensions(), 1);
+            const formData = new FormData();
+            formData.append('model', JSON.stringify(this.props.currModel));
+            formData.append('file', blob);
+            formData.append('filePreview', modelPreview);
 
-        const saveModelMethod = !this.props.currModel._id ? 'uploadModel' : 'saveModel';
+            document.getElementById('preloader').style['background-image'] = `url(${modelPreview})`;
 
-        fetch(`${ServerConfig.apiPrefix}:${ServerConfig.serverPort}/${saveModelMethod}`, {
-            method: 'POST',
-            contentType: false,
-            body: formData,
-        })
-            .then((res) => {
-                if(res.status == 200) {
-                    document.getElementById('preloader').classList.add('hide');
-                    return res.json();
-                }
+
+            Viewer.renderer.domElement.classList.remove('fullscreen');
+            setTimeout(()=>Viewer.updateCanvasSizeDimensions(), 2);
+
+            const saveModelMethod = !this.props.currModel._id ? 'uploadModel' : 'saveModel';
+
+            fetch(`${ServerConfig.apiPrefix}:${ServerConfig.serverPort}/${saveModelMethod}`, {
+                method: 'POST',
+                contentType: false,
+                body: formData,
             })
-            .then( savedCurrModel => {
-                if(saveModelMethod == 'uploadModel')  this.props.updateCurrModel(savedCurrModel);
+                .then((res) => {
+                    if(res.status == 200) {
+                        document.getElementById('preloader').classList.add('hide');
+                        return res.json();
+                    }
+                })
+                .then( savedCurrModel => {
+                    if(saveModelMethod == 'uploadModel')  this.props.updateCurrModel(savedCurrModel);
 
-                this.setState({showAppMesg: true});
-            })
-            .catch(
-                error => console.log(error) // Handle the error response object
-            );
+                    this.setState({showAppMesg: true});
+                })
+                .catch(
+                    error => console.log(error) // Handle the error response object
+                );
+        }, 30);
     }
 
 
