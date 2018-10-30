@@ -108,14 +108,14 @@ class ModelEditor extends React.Component {
         const modelId = location.pathname.substring(posLastSlash + 1);
 
         if (!this.props.currModel.url) this.props.initCurrModel(modelId);
-        else this.loadModel(this.props.currModel.url, true);
+        else this.loadModel(this.props.currModel.url);
     }
 
 
-    loadModel(modelUrl, isLolModel) {
+    loadModel(locModelUrl) {
 
-        if (!isLolModel) {
-            let previewImg = `${ServerConfig.apiPrefix + ':' + ServerConfig.serverPort + ServerConfig.model3DStore + this.props.currModel._id}.jpeg`;
+        if (!locModelUrl) {
+            let previewImg = `${ServerConfig.apiPrefix + ':' + ServerConfig.serverPort + ServerConfig.model3DStore + this.props.currModel._id}/preview.jpeg`;
 
             const modelIdFromUrl = location.pathname.substr(location.pathname.lastIndexOf('/')+1);
             const currModel = this.props.modelList.find(model => model._id==modelIdFromUrl);
@@ -126,7 +126,9 @@ class ModelEditor extends React.Component {
             document.getElementById('preloader').style['background-image'] = `url(${previewImg})`;
         }
 
-        const modelDownloadUrl = (!isLolModel ? ServerConfig.apiPrefix + ':' + ServerConfig.serverPort + ServerConfig.model3DStore : '') + modelUrl;
+        const modelDownloadUrl = !locModelUrl
+                                    ? ServerConfig.apiPrefix + ':' + ServerConfig.serverPort + ServerConfig.model3DStore + this.props.currModel._id + '/model.json'
+                                    : locModelUrl;
 
         this.loaderObject.load(modelDownloadUrl, (model) => {
                 this.model = model;
@@ -307,7 +309,10 @@ class ModelEditor extends React.Component {
     }
 
     componentDidUpdate(nextProps) {
-        if (!this.state.lightObjects.length) this.loadModel(this.props.currModel.url, this.props.currModel.url.includes('blob'));
+        if (!this.state.lightObjects.length) {
+            const loadModelUrl = this.props.currModel.url ? this.props.currModel.url : null;
+            this.loadModel(loadModelUrl);
+        }
     }
 
     componentWillUnmount() {
@@ -348,9 +353,15 @@ class ModelEditor extends React.Component {
             body: formData,
         })
             .then((res) => {
-                if (res.status == 200) this.setState({showAppMesg: true});
+                if(res.status == 200) {
+                    document.getElementById('preloader').classList.add('hide');
+                    return res.json();
+                }
+            })
+            .then( savedCurrModel => {
+                if(saveModelMethod == 'uploadModel')  this.props.updateCurrModel(savedCurrModel);
 
-                document.getElementById('preloader').classList.add('hide');
+                this.setState({showAppMesg: true});
             })
             .catch(
                 error => console.log(error) // Handle the error response object
@@ -514,6 +525,10 @@ export default compose(
 
             clearCurrModel: () => {
                 dispatch({type: ActionTypes.CLEAR_CURR_MODEL});
+            },
+
+            updateCurrModel: (newDataCurrModel) => {
+                dispatch({type: ActionTypes.INIT_CURR_MODEL, payload: newDataCurrModel});
             },
 
             setCurrModelName: (newCurrModelName) => {

@@ -44,7 +44,6 @@ export function editModel3D( modelData ) {
 
     Model3D.findOne({ _id: modelData._id }, (err, model3d) =>{
         model3d.name = modelData.name;
-        model3d.url = modelData.url;
         model3d.tags = modelData.tags;
         return model3d.save();
     });

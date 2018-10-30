@@ -2,7 +2,6 @@ import mongoose from 'mongoose';
 
 const Model3DScheme = new mongoose.Schema({
     name: { type: String, required: true },
-    url:  { type: String, required: true },
     tags: { type: [String], required: false },
 });
 

@@ -50,7 +50,7 @@ class ModelViewer extends React.Component {
 
     loadModel(modelUrl) {
 
-        const previewImg = `${ServerConfig.apiPrefix + ':' + ServerConfig.serverPort + ServerConfig.model3DStore + this.props.currModel._id}.jpeg`;
+        const previewImg = `${ServerConfig.apiPrefix + ':' + ServerConfig.serverPort + ServerConfig.model3DStore + this.props.currModel._id}/preview.jpeg`;
         document.getElementById('preloader').classList.remove('hide');
         document.getElementById('preloader').style['background-image'] = `url(${previewImg})`;
         // document.getElementById('preloader').classList.remove('hide');

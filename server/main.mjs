@@ -3,8 +3,7 @@ import bodyParser from 'body-parser';
 import fileUpload from 'express-fileupload';
 import cors from 'cors';
 import path from 'path';
-import fs from 'fs';
-import util from 'util';
+import fs from 'fs-extra';
 
 import ServerConfig from '../config/config.json';
 import * as db from './utils/DBUtils';
@@ -20,6 +19,8 @@ app.use(ServerConfig.model3DStore, express.static( path.resolve(path.dirname('')
 app.use(fileUpload({
     limits: { fileSize: 50 * 1024 * 1024 },
 }));
+
+const modelStorePath = path.dirname('')+ServerConfig.model3DStore;
 
 // db.removeAllUsers();
 // db.createModel3D({
@@ -119,26 +120,22 @@ app.get('/getModel3DList', (req, res) => {
 app.post('/removeModel', (req, res) => {
     console.dir('-----------------/removeModel/-------------------');
 
+    const removeModelId = req.body.modelId;
+    const modelDir = modelStorePath + '/' + removeModelId;
 
-    db.getModel3D( req.body.modelId )
+    fs.remove(modelDir, ()=>{});
+
+    db.deleteModel3D( removeModelId )
         .then(result => {
-
-            fs.unlink( path.resolve(path.dirname('') + ServerConfig.model3DStore + result.url), ()=>{} );
-            fs.unlink( path.resolve(path.dirname('') + ServerConfig.model3DStore + result._id+'.jpeg'), ()=>{} );
-
-            db.deleteModel3D( req.body.modelId )
-                .then(result => {
-                    console.dir("DELETED MODEL: " + req.body.modelId);
-                    res.send(result)
-                });
-
+            console.dir("DELETED MODEL: " + req.body.modelId);
+            res.send(result)
         });
 });
 
 
 
 app.post('/uploadModel', (req, res) => {
-    console.dir('-----------------/uploadModel/-------------------' + req.body.modelName);
+    console.dir('-----------------/uploadModel/-------------------' + req.body.model.name);
 
     if (Object.keys(req.files).length == 0) {
         return res.status(400).send('No files were uploaded.');
@@ -150,26 +147,21 @@ app.post('/uploadModel', (req, res) => {
 
     db.createModel3D({
         name: modelData.name,
-        url:  modelData.name+'.json',
         tags: modelData.tags
     })
         .then( (result)=>{
-            const modelUrl = result._id+'.json';
+            const modelDir = modelStorePath + '/' + result._id;
 
-            model3DFile.mv( path.resolve(path.dirname('') + ServerConfig.model3DStore + modelUrl), function(err) {
+            fs.mkdirSync(modelDir);
+
+            model3DFile.mv( path.resolve(modelDir + '/model.json'), function(err) {
                 if(err)  return res.status(500).send(err);
+
+                res.status(200).send(result)
             });
 
-            fs.writeFile(path.resolve(path.dirname('') + ServerConfig.model3DStore + result._id+'.jpeg'), modelPreview, 'base64', (err)=>{console.log(err)});
-
-            // return db.getModel3DList()
-
-            const newModelData = result;
-            newModelData.url = modelUrl;
-
-            return db.editModel3D( newModelData );
+            fs.writeFile(path.resolve(modelDir + '/preview.jpeg'), modelPreview, 'base64', (err)=>{console.log(err)});
         })
-        .then( result => res.send(result) );
 });
 
 
@@ -184,15 +176,16 @@ app.post('/saveModel', (req, res) => {
     const model3DFile = req.files.file;
     const modelData = JSON.parse(req.body.model);
     const modelPreview = req.body.filePreview.replace(/^data:image\/jpeg;base64,/, "");
+    const modelDir = modelStorePath + '/' + modelData._id;
 
     db.editModel3D( modelData );
 
-    fs.writeFile(path.resolve(path.dirname('') + ServerConfig.model3DStore + modelData._id + '.jpeg'), modelPreview, 'base64', (err)=>{console.log(err)});
+    fs.writeFile(path.resolve(modelDir + '/preview.jpeg'), modelPreview, 'base64', (err)=>{console.log(err)});
 
-    model3DFile.mv( path.resolve(path.dirname('') + ServerConfig.model3DStore + modelData.url), function(err) {
+    model3DFile.mv( path.resolve(modelDir + '/model.json'), function(err) {
         if(err)  return res.status(500).send(err);
 
-        return res.status(200).send("Model saved");
+        return res.status(200).send({msg: "Model saved"});
     });
 });
 

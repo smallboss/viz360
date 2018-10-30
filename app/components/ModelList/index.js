@@ -469,7 +469,7 @@ export default compose(
 
                         modelList.forEach(model => {
                             model.preview = new Image();
-                            model.preview.src = `${ServerConfig.apiPrefix + ':' + ServerConfig.serverPort + ServerConfig.model3DStore + model._id}.jpeg`;
+                            model.preview.src = `${ServerConfig.apiPrefix + ':' + ServerConfig.serverPort + ServerConfig.model3DStore + model._id}/preview.jpeg`;
                         });
 
                         dispatch({type: ActionTypes.INIT_MODEL_LIST, payload: modelList});
