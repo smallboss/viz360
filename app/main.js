@@ -2,13 +2,10 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 // import { AppContainer } from 'react-hot-loader';
 import App from './components/App';
-import * as THREE from 'three-full';
+// import * as THREE from 'three-full';
 
 import Root from './config/Root';
 
-console.log('MAIN');
-
-window.THREE = THREE;
 
 const render = (Component) => {
     console.log('mainjs');
