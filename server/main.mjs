@@ -173,6 +173,8 @@ app.post('/saveModel', (req, res) => {
     }
 
 
+    console.log('req.files', req.files);
+
     const model3DFile = req.files.file;
     const modelData = JSON.parse(req.body.model);
     const modelPreview = req.body.filePreview.replace(/^data:image\/jpeg;base64,/, "");
@@ -181,6 +183,13 @@ app.post('/saveModel', (req, res) => {
     db.editModel3D( modelData );
 
     fs.writeFile(path.resolve(modelDir + '/preview.jpeg'), modelPreview, 'base64', (err)=>{console.log(err)});
+
+    let i=0;
+    while(req.files['img_'+i]){
+        const currImg = req.files['img_'+i];
+        currImg.mv( path.resolve(modelDir + currImg.name), ()=>{});
+        i++;
+    }
 
     model3DFile.mv( path.resolve(modelDir + '/model.json'), function(err) {
         if(err)  return res.status(500).send(err);

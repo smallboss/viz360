@@ -3,6 +3,8 @@ import {Link} from 'react-router-dom';
 import {connect} from 'react-redux';
 import {compose} from 'redux';
 
+import { saveAs } from 'file-saver';
+
 import classNames from 'classnames';
 
 import TextField from '@material-ui/core/TextField';
@@ -132,17 +134,6 @@ class ModelEditor extends React.Component {
 
 
         const setPath = ServerConfig.apiPrefix + ':' + ServerConfig.serverPort + ServerConfig.model3DStore;
-        //
-        // new THREE.FBXLoader().load(setPath+'/Hands.FBX', (model) => {
-        //
-        //     console.log('model ------------', model);
-        //
-        // }, (progress) => {
-        //     console.log('progress', progress);
-        // }, (error) => {
-        //     console.log('error', error);
-        // });
-
 
 
         this.loaderObject.load(modelDownloadUrl, (model) => {
@@ -217,6 +208,13 @@ class ModelEditor extends React.Component {
     }
 
 
+    removeTexture( material, valName, elPreviewInput ) {
+        material[valName] = null;
+        material.needsUpdate = true;
+        elPreviewInput.style['background-image'] = '';
+    }
+
+
     renderStgsItem(el) {
 
         const getColor = (el, valName) => {
@@ -243,39 +241,46 @@ class ModelEditor extends React.Component {
             const materialMap = el.material ? el.material : el;
 
             const bgTexture = {};
-            if (materialMap[valName] && materialMap[valName].image)
+            if(materialMap[valName] && materialMap[valName].image)
                 bgTexture.backgroundImage = `url(${materialMap[valName].image.src})`;
 
+
+            let elPreviewInput = null;
 
             return (
                 <div className="setng-row">
                     <span className="stngs-name">{`${valName}:`}</span>
 
-                    <div className="texture-preview" style={bgTexture}>
-                        <input type="file" onChange={(event) => {
+                    <div className="wrap-texture-stng">
+                        <div className="texture-preview" ref={ el=>elPreviewInput=el} style={bgTexture}>
+                            <input type="file" onChange={(event) => {
 
-                            const textureInput = event.target;
+                                const textureInput = event.target;
+                                const reader = new FileReader();
 
-                            const reader = new FileReader();
-                            reader.onload = (e) => {
-                                const image = new Image();
-                                image.src = e.target.result;
-                                const texture = new THREE.Texture();
-                                texture.image = image;
-                                texture.minFilter = THREE.LinearFilter;
-                                texture.magFilter = THREE.LinearFilter;
-                                materialMap[valName] = texture;
-                                image.onload = function () {
-                                    texture.needsUpdate = true;
-                                    materialMap.needsUpdate = true;
+                                reader.onload = (e) => {
+                                    const image = new Image();
+                                    image.src = e.target.result;
+                                    const texture = new THREE.Texture();
+                                    texture.image = image;
+                                    texture.minFilter = THREE.LinearFilter;
+                                    texture.magFilter = THREE.LinearFilter;
+                                    materialMap[valName] = texture;
+                                    image.onload = function () {
+                                        texture.needsUpdate = true;
+                                        materialMap.needsUpdate = true;
 
-                                    textureInput.parentElement.style['background-image'] = `url(${e.target.result})`;
+                                        textureInput.parentElement.style['background-image'] = `url(${e.target.result})`;
+                                    };
+                                    // texture.wrapS = texture.wrapT = THREE.MirroredRepeatWrapping;
                                 };
-                                // texture.wrapS = texture.wrapT = THREE.MirroredRepeatWrapping;
-                            };
 
-                            reader.readAsDataURL(event.target.files[0]);
-                        }}/>
+                                reader.readAsDataURL(event.target.files[0]);
+                            }}/>
+                        </div>
+                        <Button className="btn-remove-texture small" variant="contained" color="primary" onClick={(event)=>this.removeTexture( materialMap, valName, elPreviewInput )}>
+                            Del
+                        </Button>
                     </div>
                 </div>
             )
@@ -378,7 +383,21 @@ class ModelEditor extends React.Component {
 
         setTimeout(()=>{
 
-            document.getElementById('preloader').classList.remove('hide');
+            const modelJSON = this.model.toJSON();
+            const images = [];
+
+            // modelJSON.images.forEach( img => {
+            //     const currImg = new Image();
+            //     const imgType = img.url.includes('image/jpeg') ? '.jpeg' : ".png";
+            //     currImg.src = img.url;
+            //     currImg.name = img.uuid + imgType;
+            //     img.url = img.uuid + imgType;
+            //
+            //     images.push( currImg );
+            // });
+
+            console.log('JSON', this.model.toJSON());
+            console.log('images', images);
 
             const json = JSON.stringify(this.model);
             const blob = new Blob([json], {type: "octet/stream"});
@@ -396,6 +415,12 @@ class ModelEditor extends React.Component {
             formData.append('file', blob);
             formData.append('filePreview', modelPreview);
 
+            images.forEach( (img, i) => {
+                console.log('img', img);
+                formData.append('img_'+i, new Blob([img.src], {type: "image/jpeg"}));
+            });
+
+            document.getElementById('preloader').classList.remove('hide');
             document.getElementById('preloader').style['background-image'] = `url(${modelPreview})`;
 
 
@@ -500,8 +525,7 @@ class ModelEditor extends React.Component {
                                         label={tag}
                                         className={classNames(classes.chip, "model-tag selected")}
                                         color="primary"
-                                        onDelete={() => {
-                                        }}
+                                        onDelete={()=>{}}
                                         deleteIcon={<CloseIcon/>}
                                         onClick={()=>this.props.removeModelTag( tag )}
                                     />
@@ -528,8 +552,9 @@ class ModelEditor extends React.Component {
                                 }
 
                                 <div className="wrap-stgs-item">
-                                    <Button variant="contained" color="primary" onClick={() => this.addPonterLight()}>Add
-                                        PointerLight</Button>
+                                    <Button variant="contained" color="primary" onClick={()=>this.addPonterLight()}>
+                                        Add PointerLight
+                                    </Button>
                                 </div>
 
                                 {
