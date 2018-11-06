@@ -95,6 +95,8 @@ class ModelList extends React.Component {
 
         this.props.initModelList();
 
+        this.uploadModelFiles = [];
+
         this.loaderFBX = new THREE.FBXLoader();
         this.loaderOBJ = new THREE.OBJLoader();
     }
@@ -117,19 +119,18 @@ class ModelList extends React.Component {
 
 
     uploadModel() {
-        this.converModeltToJSON( this.uploadModelFiles[0].preview, this.uploadModelFiles[0].name, (modelJSON)=>this.uploadModelJSON( modelJSON )  );
-    }
 
+        // const formData = new FormData();
+        // formData.append('modelName', this.state.uploadModelName);
+        // formData.append('tags', JSON.stringify(this.state.tagsNewModel));
 
-    uploadModelJSON( modelJSON ) {
+        // this.uploadModelFiles.forEach((file, key)=>{
+        //     console.log('file', file);
+        //     const blob = new Blob([file], {type: "octet/stream"});
+        //     formData.append(file.name, blob);
+        // });
 
-        const json = JSON.stringify(modelJSON);
-        const blob = new Blob([json], {type: "octet/stream"});
-
-        const formData = new FormData();
-        formData.append('modelName', this.state.uploadModelName);
-        formData.append('file', blob);
-        formData.append('tags', JSON.stringify(this.state.tagsNewModel));
+        const blob = new Blob([this.uploadModelFiles[0]], {type: "octet/stream"});
 
         const newCurrModel = {
             name: this.state.uploadModelName,
@@ -137,9 +138,9 @@ class ModelList extends React.Component {
             tags: this.state.tagsNewModel
         };
 
-        this.props.initCurrModel( newCurrModel );
-
-        this.props.history.push(`/admin_panel/${this.state.uploadModelName}`);
+        this.converModeltToJSON( newCurrModel.url, this.uploadModelFiles[0].name,
+            (modelJSON) => this.uploadModelJSON( modelJSON )
+        );
 
 
         // fetch(`${ServerConfig.apiPrefix}:${ServerConfig.serverPort}/uploadModel`, {
@@ -151,6 +152,14 @@ class ModelList extends React.Component {
         //         if (res.status == 200) return res.json();
         //     })
         //     .then((data) => {
+        //         console.log('data', data);
+        //         const model = data._doc;
+        //
+        //         const modelFolder = `${ServerConfig.apiPrefix + ':' + ServerConfig.serverPort + ServerConfig.model3DStore + model._id}/`;
+        //
+        //         this.converModeltToJSON( modelFolder, data.fileName,
+        //             (modelJSON) => this.uploadModelJSON( modelJSON, model._id )
+        //         );
         //     })
         //     .catch(
         //         error => console.log(error) // Handle the error response object
@@ -158,22 +167,89 @@ class ModelList extends React.Component {
     }
 
 
-    converModeltToJSON( modelUrl, fileModelName, callback ) {
+    uploadModelJSON( modelJSON ) {
 
-        if (fileModelName.toLowerCase().includes('.obj')) {
-            this.loaderOBJ.load(modelUrl, (model) => {
+        const json = JSON.stringify(modelJSON);
+        const blob = new Blob([json], {type: "octet/stream"});
+
+        const newCurrModel = {
+            name: this.state.uploadModelName,
+            url: window.URL.createObjectURL(blob),
+            tags: this.state.tagsNewModel
+        };
+
+        // const formData = new FormData();
+        // formData.append('model', JSON.stringify(newCurrModel));
+        // formData.append('file', blob);
+        // formData.append('tags', JSON.stringify(this.state.tagsNewModel));
+
+        this.props.initCurrModel( newCurrModel );
+        this.props.history.push(`/admin_panel/${newCurrModel.name}`);
+
+        // fetch(`${ServerConfig.apiPrefix}:${ServerConfig.serverPort}/uploadModel`, {
+        //     method: 'POST',
+        //     contentType: false,
+        //     body: formData,
+        // })
+        //     .then((res) => {
+        //         if (res.status == 200) return res.json();
+        //     })
+        //     .catch(
+        //         error => console.log(error) // Handle the error response object
+        //     );
+    }
+
+
+    converModeltToJSON( modelFileUrl, modelFileName, callback ) {
+
+        console.log('modelFileUrl', modelFileUrl);
+
+        // this.firstTuningModel( modelFile );
+        // callback( modelFile.toJSON() );
+
+        if (modelFileName.toLowerCase().includes('.obj')) {
+
+            this.loaderOBJ.load(modelFileUrl, (model) => {
 
                 this.firstTuningModel( model );
-                callback( model );
+                callback( model.toJSON() );
 
             }, (progress) => {
                 console.log('progress', progress);
             }, (error) => {
                 console.log('error', error);
             });
+
+            // THREE.Loader.Handlers.add( /\.dds$/i, new THREE.DDSLoader() );
+            // new THREE.MTLLoader()
+            //     .setPath( modelFolder )
+            //     .load( 'materials.mtl', ( materials ) => {
+            //         materials.preload();
+            //         new THREE.OBJLoader()
+            //             .setMaterials( materials )
+            //             .setPath( modelFolder )
+            //             .load( 'model.obj', ( model ) => {
+            //                 this.model = model;
+            //
+            //                 this.firstTuningModel( model );
+            //                 callback( model.toJSON() );
+            //
+            //             }, ()=>{}, err=>{console.log('ERROR: ', err)} );
+            //     } );
+            //
+            // this.loaderOBJ.load(modelFolder + modelFile, (model) => {
+            //
+            //     this.firstTuningModel( model );
+            //     callback( model.toJSON() );
+            //
+            // }, (progress) => {
+            //     console.log('progress', progress);
+            // }, (error) => {
+            //     console.log('error', error);
+            // });
         }
         else {
-            this.loaderFBX.load(modelUrl, (model) => {
+            this.loaderFBX.load(modelFileUrl, (model) => {
 
                 this.firstTuningModel( model );
                 callback( model.toJSON() );
@@ -191,8 +267,6 @@ class ModelList extends React.Component {
 
         model.traverse( el => {
            if(el.material) {
-               // el.geometry.center();
-
                if(el.material.length)  el.material.forEach( el => el.side=THREE.DoubleSide );
                else el.material.side=THREE.DoubleSide;
            }
@@ -213,13 +287,21 @@ class ModelList extends React.Component {
         this.uploadModelFiles = [];
 
         this.wrapFileNames.innerText = '';
+        let modelFile = null;
 
         acceptedFiles.forEach(file => {
-            this.wrapFileNames.innerText += ' ' + file.name+',';
-            this.uploadModelFiles.push( file );
+            // this.wrapFileNames.innerText += ' ' + file.name+',';
+            if(file.name.toLowerCase().includes('.fbx') || file.name.toLowerCase().includes('.obj')) {
+                // modelFile = file;
+                this.wrapFileNames.innerText = file.name;
+                this.uploadModelFiles.push( file );
+            }
+            // else this.uploadModelFiles.push( file );
         });
 
-        this.wrapFileNames.innerText = this.wrapFileNames.innerText.substr(0, this.wrapFileNames.innerText.length-1);
+        // this.uploadModelFiles = [modelFile, ...this.uploadModelFiles];
+
+        // this.wrapFileNames.innerText = this.wrapFileNames.innerText.substr(0, this.wrapFileNames.innerText.length-1);
 
         this.forceUpdate();
     }
@@ -279,7 +361,7 @@ class ModelList extends React.Component {
 
         const isUploadDisabled = () => {
 
-            if(this.state.uploadModelName && this.uploadModelFiles && this.uploadModelFiles.length) {
+            if(this.state.uploadModelName && this.uploadModelFiles.length) {
                 return(
                     <Button
                         variant="contained"
@@ -467,7 +549,6 @@ export default compose(
                         'Accept': 'application/json',
                         'Content-Type': 'application/json',
                     },
-                    // mode: 'cors',
                     cache: 'default',
                 };
 

@@ -5,10 +5,15 @@ class Viewer {
         this.scene.background = new THREE.Color(0xf6f6f6);
         // this.scene.fog = new THREE.Fog( 0xa0f0f0, 200, 1000 );
 
-        this.camera = new THREE.PerspectiveCamera(45, window.innerWidth * 0.9 / window.innerHeight * 0.9, 1, 100000);
-        this.camera.name = "PerspectiveCamera";
-        this.camera.position.set(100, 200, 300);
+        this.defaultCamera = new THREE.PerspectiveCamera(45, window.innerWidth * 0.9 / window.innerHeight * 0.9, 1, 100000);
+        this.defaultCamera.name = "PerspectiveCamera";
+        this.defaultCamera.position.set(100, 200, 300);
+        this.camera = this.defaultCamera.clone();
+
         this.scene.add(this.camera);
+        // this.camera.name = "PerspectiveCamera";
+        // this.camera.position.set(100, 200, 300);
+        // this.scene.add(this.camera);
 
         // const grid = new THREE.GridHelper(2000, 20, 0x000000, 0x000000);
         // grid.name = "GridHelper";
@@ -24,11 +29,9 @@ class Viewer {
         this.renderer = new THREE.WebGLRenderer({antialias: true, preserveDrawingBuffer: true});
         // this.renderer.setSize(window.innerWidth * 0.9, window.innerHeight * 0.9);
         this.renderer.setClearColor(0x000000, 1.0);
-        // document.getElementById("wrap-canvas").appendChild(this.renderer.domElement);
 
-        this.orbitControls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+        this.orbitControls = new THREE.OrbitControls(this.defaultCamera.clone(), this.renderer.domElement);
 
-        // if(this.state.isAdmin){
         this.transformControls = new THREE.TransformControls(this.camera, this.renderer.domElement);
         this.transformControls.name = 'TransformControls';
         this.transformControls.setSpace('local');
@@ -58,7 +61,7 @@ class Viewer {
 
 
     onMouseup(event) {
-
+        if (event.target !== this.renderer.domElement) return;
         if (this.controlsChaned || this.viewType) return;
 
         const mouse = new THREE.Vector2();
@@ -94,49 +97,64 @@ class Viewer {
         }
     }
 
+
+    transformControlsAttach( el ) {
+        if(el.isAmbientLight)  return;
+
+        this.transformControls.attach( el );
+        if( el.isLight ) this.transformControls.setMode("translate");
+        if( el.isMesh )  this.transformControls.setMode("rotate");
+    }
+
+
     addModelToScene(model, viewType) {
         this.model = model;
         this.model.name = `model3d`;
+
+        const modelCamera = this.model.getObjectByName('PerspectiveCamera');
+        if(modelCamera) this.camera = modelCamera.clone();
+        else this.camera = this.defaultCamera.clone();
+
+        this.transformControls.camera = this.camera;
+        this.orbitControls.object = this.camera;
+        this.orbitControls.update();
+        this.updateDimensions();
+
         this.scene.add(this.model);
         this.viewType = viewType;
 
-        const b = new THREE.Box3().setFromObject(model);
+
+        const meshGroup = new THREE.Group();
+        this.model.children.forEach( el => {
+            if(!el.isCamera) meshGroup.add(el.clone());
+        });
+
+        const b = new THREE.Box3().setFromObject( this.model );
         const vec = new THREE.Vector3();
         b.getCenter(vec);
-        model.position.sub(vec);
-        model.updateMatrix();
+        this.model.position.sub(vec);
+        this.model.updateMatrix();
     }
 
-    transfContrlAttach(mesh) {
-        this.transformControls.attach(mesh);
+    resetCameraPos() {
+        const meshGroup = new THREE.Group();
+
+        this.model.children.forEach( el => {
+            if(el.isMesh) meshGroup.add(el.clone());
+        });
+
+        const b = new THREE.Box3().setFromObject( meshGroup );
+        this.camera.position.copy( b.max.clone().multiplyScalar(5) );
+        this.camera.lookAt(0,0,0);
+        this.camera.updateMatrix();
     }
 
-    transfContrlDettach(mesh) {
-        this.transformControls.detach(mesh);
-    }
-
-    sceneAdd(mesh, name) {
-        if (name) mesh.name = name;
-        this.scene.add(mesh);
-    }
 
     removeLight(light) {
         const lightHelper = this.groupLightHelpers.children.find(el => el.light && el.light.uuid == light.uuid);
 
-        console.log('lightHelper', lightHelper);
-
         this.groupLightHelpers.remove(lightHelper);
         this.model.remove(light);
-    }
-
-    getObjectByUuid(uuid) {
-        let object = null;
-
-        this.scene.traverse(el => {
-            if (el.uuid == uuid) object = el;
-        });
-
-        return object;
     }
 
     addLightHelper(light, name) {
@@ -176,6 +194,7 @@ class Viewer {
     }
 
     hideHelpElements() {
+        this.transformControls.detach();
         this.scene.children.forEach( el => {
             if(!el.name.includes('model3d') && !el.name.includes('Camera')) el.visible = false;
         });
@@ -196,6 +215,7 @@ class Viewer {
     detach(wrapCanvas) {
         wrapCanvas.removeChild(this.renderer.domElement);
         this.cancelAnimation();
+        this.transformControls.detach();
         this.scene.remove(this.scene.getObjectByName("model3d"));
         this.groupLightHelpers.children = [];
     }
@@ -203,5 +223,6 @@ class Viewer {
 }
 
 const viewer = new Viewer();
+window.v = viewer;
 
 export default viewer;

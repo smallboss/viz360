@@ -34,6 +34,7 @@ class App extends React.Component {
                 <Router>
                     <div>
                         <div id="preloader" className="wrap-reloader hide">
+                            <img id="preloader-bg" className="preloader-bg" src="" alt=""/>
                             <div className="holder">
                                 <div className="circle-stripes-preloader">
                                     <div></div>

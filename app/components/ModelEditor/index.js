@@ -118,14 +118,12 @@ class ModelEditor extends React.Component {
 
         if (!locModelUrl) {
             let previewImg = `${ServerConfig.apiPrefix + ':' + ServerConfig.serverPort + ServerConfig.model3DStore + this.props.currModel._id}/preview.jpeg`;
-
             const modelIdFromUrl = location.pathname.substr(location.pathname.lastIndexOf('/')+1);
-            const currModel = this.props.modelList.find(model => model._id==modelIdFromUrl);
 
-            if(currModel)  previewImg = currModel.preview.src;
-
+            fetch( previewImg, {cache: 'no-cache'} );
             document.getElementById('preloader').classList.remove('hide');
             document.getElementById('preloader').style['background-image'] = `url(${previewImg})`;
+            document.getElementById('preloader-bg').src = previewImg;
         }
 
         const modelDownloadUrl = !locModelUrl
@@ -133,7 +131,7 @@ class ModelEditor extends React.Component {
                                     : locModelUrl;
 
 
-        const setPath = ServerConfig.apiPrefix + ':' + ServerConfig.serverPort + ServerConfig.model3DStore;
+        const setPath = ServerConfig.apiPrefix + ':' + ServerConfig.serverPort + ServerConfig.model3DStore + '/' + location.pathname.substr(location.pathname.lastIndexOf('/')+1) + '/';
 
 
         this.loaderObject.load(modelDownloadUrl, (model) => {
@@ -212,6 +210,7 @@ class ModelEditor extends React.Component {
         material[valName] = null;
         material.needsUpdate = true;
         elPreviewInput.style['background-image'] = '';
+        document.getElementById('preloader-bg').src = '';
     }
 
 
@@ -292,11 +291,11 @@ class ModelEditor extends React.Component {
                 <div key={el.uuid} className="wrap-stgs-item">
                     {/*<span>{el.type} <input type="checkbox" value={el.visibility} onChange={()=>{el.visibility=!el.visibility; this.forceUpdate()}} /></span>*/}
                     <div className="wrap-stng-row">
-                        <span className="stngs-name">{el.type}</span>
+                        <span className="stngs-name" onClick={()=>Viewer.transformControlsAttach(el)}>{el.type}</span>
                         {el.type.includes('PointLight')
-                            ? <CloseIcon onClick={() => this.removeLight(el)}/ >
+                            ? <CloseIcon onClick={()=>this.removeLight(el)} />
                             : ''
-                            }
+                        }
                     </div>
                     {getColor(el, 'color')}
                     {getSlider(el, 'intensity', 0.001, 5)}
@@ -373,7 +372,10 @@ class ModelEditor extends React.Component {
 
     componentWillUnmount() {
         this.props.clearCurrModel();
-        Viewer.detach(this.canvasContainer)
+        Viewer.detach(this.canvasContainer);
+
+        document.getElementById('preloader').style['background-image'] = '';
+        document.getElementById('preloader-bg').src = '';
     }
 
 
@@ -383,7 +385,11 @@ class ModelEditor extends React.Component {
 
         setTimeout(()=>{
 
+            this.model.remove( this.model.getObjectByName('PerspectiveCamera') );
+
+            this.model.children.push( Viewer.camera );
             const modelJSON = this.model.toJSON();
+            // modelJSON.cameraPos = Viewer.camera.position.toArray();
             const images = [];
 
             // modelJSON.images.forEach( img => {
@@ -396,11 +402,8 @@ class ModelEditor extends React.Component {
             //     images.push( currImg );
             // });
 
-            console.log('JSON', this.model.toJSON());
-            console.log('images', images);
 
-            const json = JSON.stringify(this.model);
-            const blob = new Blob([json], {type: "octet/stream"});
+            const blob = new Blob([JSON.stringify(modelJSON)], {type: "octet/stream"});
 
             this.canvasContainer.style['background-image'] = `url(${Viewer.getPreviewImg()})`;
             Viewer.renderer.domElement.classList.add('fullscreen');
@@ -415,13 +418,14 @@ class ModelEditor extends React.Component {
             formData.append('file', blob);
             formData.append('filePreview', modelPreview);
 
-            images.forEach( (img, i) => {
-                console.log('img', img);
-                formData.append('img_'+i, new Blob([img.src], {type: "image/jpeg"}));
-            });
+            // images.forEach( (img, i) => {
+            //     console.log('img', img);
+            //     formData.append('img_'+i, new Blob([img.src], {type: "image/jpeg"}));
+            // });
 
             document.getElementById('preloader').classList.remove('hide');
             document.getElementById('preloader').style['background-image'] = `url(${modelPreview})`;
+            document.getElementById('preloader-bg').src = modelPreview;
 
 
             Viewer.renderer.domElement.classList.remove('fullscreen');
@@ -441,6 +445,9 @@ class ModelEditor extends React.Component {
                     }
                 })
                 .then( savedCurrModel => {
+
+                    console.log('savedCurrModel', savedCurrModel);
+
                     if(saveModelMethod == 'uploadModel')  this.props.updateCurrModel(savedCurrModel);
 
                     this.setState({showAppMesg: true});
@@ -510,6 +517,10 @@ class ModelEditor extends React.Component {
                         </div>
 
                         <div className="wrap-settings">
+                            <div className="wrap-stgs-item">
+                                <Button variant="contained" color="primary" onClick={()=>Viewer.resetCameraPos()}> Reset camera </Button>
+                            </div>
+
                             <TextField
                                 label="Model name*"
                                 className={classNames(classes.textField, classes.modelName, classes.w100p)}

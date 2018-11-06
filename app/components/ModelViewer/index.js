@@ -57,7 +57,6 @@ class ModelViewer extends React.Component {
         this.loaderObject.load(modelDownloadUrl, (model) => {
                 this.model = model;
                 Viewer.addModelToScene(this.model, 'viewer');
-
                 document.getElementById('preloader').classList.add('hide');
             },
             (xhr) => {

@@ -30,72 +30,13 @@ const modelStorePath = path.dirname('')+ServerConfig.model3DStore;
 // });
 
 
-app.post('/login', (req, res) => {
-    const {login, password} = req.body;
-
-    db.getUserAcc({login, password})
-        .then(result => res.send(result));
-});
-
-
-app.post('/registration', (req, res) => {
-    const {login, password} = req.body;
-
-    db.createUserAcc({login, password})
-        .then(
-            (result) => {
-                console.log(result);
-                console.log('\n');
-                console.log('============== [ New user registration ] ==============');
-                console.log('Successfully');
-                console.log(`Login:    ${login}`);
-                console.log(`Password: ${password}`);
-                console.log('=======================================================');
-                return result;
-            },
-            (reject) => {
-                console.log('\n');
-                console.log('============== [ New user registration ] ==============');
-                console.log('Error: ', reject);
-                console.log(`Login:    ${login}`);
-                console.log(`Password: ${password}`);
-                console.log('=======================================================');
-                return {errMessage: reject};
-            },
-        )
-        .then(result => res.send(result));
-});
-
-
-app.post('/addpassword', (req, res) => {
-    const {login, passwordItem} = req.body;
-
-    db.addPassword(login, passwordItem)
-        .then(data => res.send(true));
-});
-
-
-app.post('/removepassword', (req, res) => {
-    const {login, passwordItemIndex} = req.body;
-
-    db.removePassword(login, passwordItemIndex)
-        .then(data => res.send(true));
-});
-
-
-app.post('/editpassword', (req, res) => {
-    const {login, passwordIndex, passwordItem} = req.body;
-
-    db.editPassword(login, passwordIndex, passwordItem)
-        .then(data => res.send(true));
-});
 
 
 app.post('/admin_panel', (req, res) => {
     console.dir('-----------------/admin_panel/-------------------');
 
     db.getModel3DList()
-        .then(result => res.send(result) );
+        .then(result => res.send(result));
 });
 
 
@@ -104,8 +45,6 @@ app.post('/getModel', (req, res) => {
 
     db.getModel3D( req.body.modelId )
         .then(result => res.send(result));
-
-
 });
 
 
@@ -121,7 +60,7 @@ app.post('/removeModel', (req, res) => {
     console.dir('-----------------/removeModel/-------------------');
 
     const removeModelId = req.body.modelId;
-    const modelDir = modelStorePath + '/' + removeModelId;
+    const modelDir = modelStorePath + '/' + removeModelId + '/';
 
     fs.remove(modelDir, ()=>{});
 
@@ -135,7 +74,7 @@ app.post('/removeModel', (req, res) => {
 
 
 app.post('/uploadModel', (req, res) => {
-    console.dir('-----------------/uploadModel/-------------------' + req.body.model.name);
+    console.dir('-----------------/uploadModel/-------------------' + JSON.parse(req.body.model).name);
 
     if (Object.keys(req.files).length == 0) {
         return res.status(400).send('No files were uploaded.');
@@ -143,25 +82,48 @@ app.post('/uploadModel', (req, res) => {
 
     const modelData = JSON.parse(req.body.model);
     const model3DFile = req.files.file;
-    const modelPreview = req.body.filePreview.replace(/^data:image\/jpeg;base64,/, "");
+    // const modelPreview = req.body.filePreview.replace(/^data:image\/jpeg;base64,/, "");
+    // const modelDir = modelStorePath + '/' + modelData._id;
 
     db.createModel3D({
         name: modelData.name,
         tags: modelData.tags
     })
         .then( (result)=>{
-            const modelDir = modelStorePath + '/' + result._id;
+            const modelDir = modelStorePath + '/' + result._id + '/';
 
             fs.mkdirSync(modelDir);
 
-            model3DFile.mv( path.resolve(modelDir + '/model.json'), function(err) {
+            if( req.body.filePreview ) {
+                const modelPreview = req.body.filePreview.replace(/^data:image\/jpeg;base64,/, "");
+                fs.writeFile(path.resolve(modelDir + 'preview.jpeg'), modelPreview, 'base64', (err)=>{console.log(err)});
+            }
+
+            model3DFile.mv( path.resolve(modelDir + 'model.json'), function(err) {
                 if(err)  return res.status(500).send(err);
 
-                res.status(200).send(result)
+                res.status(200).send( result );
             });
 
-            fs.writeFile(path.resolve(modelDir + '/preview.jpeg'), modelPreview, 'base64', (err)=>{console.log(err)});
-        })
+            // let modelFile = '';
+
+            // for (let fileName in req.files){
+            //     const file = req.files[fileName];
+            //
+            //     let saveFileName = fileName;
+            //     if(fileName.toLowerCase().includes('.fbx')) { saveFileName = 'model.fbx'; modelFile = saveFileName; }
+            //     if(fileName.toLowerCase().includes('.obj')) { saveFileName = 'model.obj'; modelFile = saveFileName; }
+            //     if(fileName.toLowerCase().includes('.mtl'))   saveFileName = 'materials.mtl';
+            //
+            //     file.mv( path.resolve(modelDir + saveFileName), function(err) {
+            //         if(err)  return res.status(500).send(err);
+            //     });
+            // }
+
+            // const resNoJSONModel = { ...result };
+
+            // res.status(200).send( result );
+        });
 });
 
 
@@ -172,26 +134,25 @@ app.post('/saveModel', (req, res) => {
         return res.status(400).send('No files were uploaded.');
     }
 
-
-    console.log('req.files', req.files);
-
     const model3DFile = req.files.file;
     const modelData = JSON.parse(req.body.model);
-    const modelPreview = req.body.filePreview.replace(/^data:image\/jpeg;base64,/, "");
-    const modelDir = modelStorePath + '/' + modelData._id;
+    const modelDir = modelStorePath + '/' + modelData._id + '/';
+    let modelPreview = '';
+    if( req.body.filePreview ) {
+        modelPreview = req.body.filePreview.replace(/^data:image\/jpeg;base64,/, "");
+        fs.writeFile(path.resolve(modelDir + 'preview.jpeg'), modelPreview, 'base64', (err)=>{console.log(err)});
+    }
 
     db.editModel3D( modelData );
 
-    fs.writeFile(path.resolve(modelDir + '/preview.jpeg'), modelPreview, 'base64', (err)=>{console.log(err)});
+    // let i=0;
+    // while(req.files['img_'+i]){
+    //     const currImg = req.files['img_'+i];
+    //     currImg.mv( path.resolve(modelDir + currImg.name), ()=>{});
+    //     i++;
+    // }
 
-    let i=0;
-    while(req.files['img_'+i]){
-        const currImg = req.files['img_'+i];
-        currImg.mv( path.resolve(modelDir + currImg.name), ()=>{});
-        i++;
-    }
-
-    model3DFile.mv( path.resolve(modelDir + '/model.json'), function(err) {
+    model3DFile.mv( path.resolve(modelDir + 'model.json'), function(err) {
         if(err)  return res.status(500).send(err);
 
         return res.status(200).send({msg: "Model saved"});
