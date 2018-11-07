@@ -43,6 +43,7 @@
     "@material-ui/core": "^3.3.0",
     "@material-ui/icons": "^3.0.1",
     "@material-ui/lab": "^3.0.0-alpha.21",
+    "@tweenjs/tween.js": "^17.2.0",
     "bluebird": "^3.5.2",
     "body-parser": "^1.18.3",
     "cors": "^2.8.4",

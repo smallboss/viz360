@@ -1,3 +1,5 @@
+import TWEEN from '@tweenjs/tween.js';
+
 class Viewer {
     constructor() {
         this.scene = new THREE.Scene();
@@ -113,7 +115,18 @@ class Viewer {
 
         const modelCamera = this.model.getObjectByName('PerspectiveCamera');
         if(modelCamera) this.camera = modelCamera.clone();
-        else this.camera = this.defaultCamera.clone();
+        else {
+            this.camera = this.defaultCamera.clone();
+
+            const meshGroup = new THREE.Group();
+            this.model.children.forEach( el => {
+                if(el.isMesh) meshGroup.add(el.clone());
+            });
+
+            const b = new THREE.Box3().setFromObject( meshGroup );
+            this.camera.position.copy( b.max.clone().multiplyScalar(6) );
+            this.camera.position.setY( this.camera.position.y/5 );
+        }
 
         this.transformControls.camera = this.camera;
         this.orbitControls.object = this.camera;
@@ -143,8 +156,23 @@ class Viewer {
             if(el.isMesh) meshGroup.add(el.clone());
         });
 
+
         const b = new THREE.Box3().setFromObject( meshGroup );
-        this.camera.position.copy( b.max.clone().multiplyScalar(5) );
+        const startCameraPos = this.camera.position.clone();
+        const finishCameraPos = b.max.clone().multiplyScalar(6);
+        finishCameraPos.setY( finishCameraPos.y/5 );
+
+        new TWEEN.Tween({alpha: 0}).to({alpha: 1}, startCameraPos.distanceTo(finishCameraPos))
+            .onStart(()=> this.orbitControls.enabled = false )
+            .onUpdate(({alpha}) => {
+                this.orbitControls.object.position.copy( startCameraPos.clone().lerp(finishCameraPos, alpha) );
+                this.orbitControls.object.lookAt(0, 0, 0);
+                this.orbitControls.update();
+            })
+            .onComplete(()=> this.orbitControls.enabled = true )
+            .easing(TWEEN.Easing.Sinusoidal.Out)
+            .start();
+
         this.camera.lookAt(0,0,0);
         this.camera.updateMatrix();
     }
@@ -174,6 +202,7 @@ class Viewer {
     }
 
     animate() {
+        TWEEN.update();
         this.renderer.render(this.scene, this.camera);
         this.animationID = window.requestAnimationFrame(() => this.animate());
     }

@@ -272,6 +272,17 @@ class ModelList extends React.Component {
            }
         });
 
+        // const b = new THREE.Box3().setFromObject( model );
+        // const cameraPos = b.max.clone().multiplyScalar(6);
+        // cameraPos.setY( cameraPos.y/5 );
+        //
+        // console.log('b', b);
+        //
+        // const camera = new THREE.PerspectiveCamera(45, window.innerWidth * 0.9 / window.innerHeight * 0.9, 1, 100000);
+        // camera.name = "PerspectiveCamera";
+        // camera.position.copy( cameraPos );
+        // model.add(camera);
+
         const ambientLight = new THREE.AmbientLight(0xffffff, .6);
         ambientLight.name = 'AmbientLight';
         model.add(ambientLight);
