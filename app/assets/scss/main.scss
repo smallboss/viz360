@@ -174,3 +174,8 @@ $timeMultiplier: 0.5;
     background-color: map-get($colors, $i);
   }
 }
+
+
+.btn-remove-texture >*{
+  pointer-events: none;
+}

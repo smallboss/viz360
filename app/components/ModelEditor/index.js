@@ -206,13 +206,62 @@ class ModelEditor extends React.Component {
     }
 
 
-    removeTexture( material, valName, elPreviewInput ) {
-        material[valName] = null;
-        material.needsUpdate = true;
+    removeTexture( event, materialMap, valName, elPreviewInput ) {
+        console.log('event.target', event.target);
+        event.target.previousSibling.children[0].value = '';
+        event.target.previousSibling.children[0].type = '';
+        event.target.previousSibling.children[0].type = 'file';
+
+        if(materialMap[valName]) materialMap[valName].dispose();
+        materialMap[valName] = null;
+        materialMap.needsUpdate = true;
         elPreviewInput.style['background-image'] = '';
         document.getElementById('preloader-bg').src = '';
     }
 
+    loadTexture( event, materialMap, valName ) {
+        const textureInput = event.target;
+        const reader = new FileReader();
+
+
+        if(valName == 'envMap') {
+            const loader = new THREE.CubeTextureLoader();
+            const imgArray = [];
+
+            for (let file of event.target.files) {
+                imgArray.push( window.URL.createObjectURL(new Blob([file], {type: "octet/stream"})) );
+            }
+
+            const textureCube = loader.load(imgArray, ()=>console.log('loaded ====================================='));
+            materialMap[valName] = textureCube;
+            textureCube.needsUpdate = true;
+            materialMap.needsUpdate = true;
+            textureInput.parentElement.style['background-image'] = `url(${imgArray[0]})`;
+        }
+        else{
+            reader.onload = (e) => {
+                const image = new Image();
+                image.src = e.target.result;
+                const texture = new THREE.Texture();
+                texture.image = image;
+                texture.minFilter = THREE.LinearFilter;
+                texture.magFilter = THREE.LinearFilter;
+                if(materialMap[valName]) materialMap[valName].dispose();
+                materialMap[valName] = texture;
+                image.onload = function () {
+                    texture.needsUpdate = true;
+                    materialMap.needsUpdate = true;
+
+                    textureInput.parentElement.style['background-image'] = `url(${e.target.result})`;
+                };
+                // texture.wrapS = texture.wrapT = THREE.MirroredRepeatWrapping;
+            };
+
+            console.log('event.target.files[0]', event.target.files[0]);
+
+            if(event.target.files[0])  reader.readAsDataURL(event.target.files[0]);
+        }
+    }
 
     renderStgsItem(el) {
 
@@ -240,8 +289,10 @@ class ModelEditor extends React.Component {
             const materialMap = el.material ? el.material : el;
 
             const bgTexture = {};
-            if(materialMap[valName] && materialMap[valName].image)
-                bgTexture.backgroundImage = `url(${materialMap[valName].image.src})`;
+            if(materialMap[valName] && materialMap[valName].image){
+                const imgSrc = materialMap[valName].image.length ? materialMap[valName].image[0].src : materialMap[valName].image.src;
+                bgTexture.backgroundImage = `url(${imgSrc})`;
+            }
 
 
             let elPreviewInput = null;
@@ -252,32 +303,9 @@ class ModelEditor extends React.Component {
 
                     <div className="wrap-texture-stng">
                         <div className="texture-preview" ref={ el=>elPreviewInput=el} style={bgTexture}>
-                            <input type="file" onChange={(event) => {
-
-                                const textureInput = event.target;
-                                const reader = new FileReader();
-
-                                reader.onload = (e) => {
-                                    const image = new Image();
-                                    image.src = e.target.result;
-                                    const texture = new THREE.Texture();
-                                    texture.image = image;
-                                    texture.minFilter = THREE.LinearFilter;
-                                    texture.magFilter = THREE.LinearFilter;
-                                    materialMap[valName] = texture;
-                                    image.onload = function () {
-                                        texture.needsUpdate = true;
-                                        materialMap.needsUpdate = true;
-
-                                        textureInput.parentElement.style['background-image'] = `url(${e.target.result})`;
-                                    };
-                                    // texture.wrapS = texture.wrapT = THREE.MirroredRepeatWrapping;
-                                };
-
-                                reader.readAsDataURL(event.target.files[0]);
-                            }}/>
+                            <input type="file" onChange={(event) => this.loadTexture(event, materialMap, valName)} multiple />
                         </div>
-                        <Button className="btn-remove-texture small" variant="contained" color="primary" onClick={(event)=>this.removeTexture( materialMap, valName, elPreviewInput )}>
+                        <Button className="btn-remove-texture small" variant="contained" color="primary" onClick={(event)=>this.removeTexture( event, materialMap, valName, elPreviewInput )}>
                             Del
                         </Button>
                     </div>
@@ -299,7 +327,7 @@ class ModelEditor extends React.Component {
                     </div>
                     {getColor(el, 'color')}
                     {getSlider(el, 'intensity', 0.001, 5)}
-                    {el.distance ? getSlider(el, 'distance', 0, 1000) : ''}
+                    {el.distance ? getSlider(el, 'distance', 0, 800) : ''}
                 </div>
             )
         }
@@ -460,7 +488,7 @@ class ModelEditor extends React.Component {
 
 
     addPonterLight() {
-        const pointLight = new THREE.PointLight(0xff5555, 1.7, 800);
+        const pointLight = new THREE.PointLight(0xffffff, 1.7, 800);
         pointLight.name = 'PointLight';
         pointLight.position.set(0, 180, 0);
 

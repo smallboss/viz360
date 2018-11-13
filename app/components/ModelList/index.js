@@ -265,31 +265,42 @@ class ModelList extends React.Component {
 
     firstTuningModel( model ) {
 
+        const b = new THREE.Box3().setFromObject( model );
+        const ditance = 100/(b.min.distanceTo(b.max)/2);
+        // const ditance = 10;
+        console.log('DISTANCE: ', ditance);
+
         model.traverse( el => {
-           if(el.material) {
-               if(el.material.length)  el.material.forEach( el => el.side=THREE.DoubleSide );
-               else el.material.side=THREE.DoubleSide;
-           }
+
+            console.log('el ======================', el);
+
+            if(el.material) {
+                if(el.material.length)  el.material.forEach( el => el.side=THREE.DoubleSide );
+                else el.material.side=THREE.DoubleSide;
+            }
+
+            if(el.geometry) {
+                if(el.geometry.isBufferGeometry) {
+                    const geometry = new THREE.Geometry();
+                    geometry.fromBufferGeometry(el.geometry);
+                    el.geometry = geometry;
+                }
+
+                el.geometry.computeBoundingBox();
+                // el.geometry.normalize();
+                el.geometry.scale(ditance, ditance, ditance);
+                el.geometry.needsUpdate = true;
+            }
         });
 
-        // const b = new THREE.Box3().setFromObject( model );
-        // const cameraPos = b.max.clone().multiplyScalar(6);
-        // cameraPos.setY( cameraPos.y/5 );
-        //
-        // console.log('b', b);
-        //
-        // const camera = new THREE.PerspectiveCamera(45, window.innerWidth * 0.9 / window.innerHeight * 0.9, 1, 100000);
-        // camera.name = "PerspectiveCamera";
-        // camera.position.copy( cameraPos );
-        // model.add(camera);
 
         const ambientLight = new THREE.AmbientLight(0xffffff, .6);
         ambientLight.name = 'AmbientLight';
         model.add(ambientLight);
 
-        const pointLight = new THREE.PointLight(0xff5555, 1.7, 800);
+        const pointLight = new THREE.PointLight(0xffffff, 1.4, 300);
         pointLight.name = 'PointLight';
-        pointLight.position.set(0, 180, 150);
+        pointLight.position.set(50, 120, 100);
         pointLight.updateMatrix();
         model.add(pointLight);
     }
