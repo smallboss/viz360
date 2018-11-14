@@ -17,11 +17,11 @@ class Viewer {
         // this.camera.position.set(100, 200, 300);
         // this.scene.add(this.camera);
 
-        const grid = new THREE.GridHelper(2000, 20, 0x000000, 0x000000);
-        grid.name = "GridHelper";
-        grid.material.opacity = 0.2;
-        grid.material.transparent = true;
-        this.scene.add(grid);
+        // const grid = new THREE.GridHelper(2000, 20, 0x000000, 0x000000);
+        // grid.name = "GridHelper";
+        // grid.material.opacity = 0.2;
+        // grid.material.transparent = true;
+        // this.scene.add(grid);
 
         this.groupLightHelpers = new THREE.Group();
         this.groupLightHelpers.name = 'GroupLightHelpers';
