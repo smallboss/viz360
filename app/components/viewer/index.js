@@ -84,10 +84,10 @@ class Viewer {
             let intersectsModel = [];
 
             if (this.model)
-                intersectsModel = this.raycaster.intersectObjects(this.model.children);
+                intersectsModel = this.raycaster.intersectObjects(this.model.getObjectByName('MeshList').children);
 
             if (intersectsModel.length) {
-                this.transformControls.attach(intersectsModel[0].object);
+                this.transformControls.attach(this.model.children[0]);
                 this.transformControls.setMode("rotate");
             }
             else {
@@ -111,7 +111,7 @@ class Viewer {
 
     addModelToScene(model, viewType) {
         this.model = model;
-        this.model.name = `model3d`;
+        // this.model.name = `model3d`;
 
         const modelCamera = this.model.getObjectByName('PerspectiveCamera');
         if(modelCamera) this.camera = modelCamera.clone();
@@ -119,7 +119,7 @@ class Viewer {
             this.camera = this.defaultCamera.clone();
 
             const meshGroup = new THREE.Group();
-            this.model.children.forEach( el => {
+            this.model.traverse( el => {
                 if(el.isMesh) meshGroup.add(el.clone());
             });
 
@@ -152,7 +152,7 @@ class Viewer {
     resetCameraPos() {
         const meshGroup = new THREE.Group();
 
-        this.model.children.forEach( el => {
+        this.model.traverse( el => {
             if(el.isMesh) meshGroup.add(el.clone());
         });
 
@@ -225,7 +225,7 @@ class Viewer {
     hideHelpElements() {
         this.transformControls.detach();
         this.scene.children.forEach( el => {
-            if(!el.name.includes('model3d') && !el.name.includes('Camera')) el.visible = false;
+            if(!el.name.includes('Model3D') && !el.name.includes('Camera')) el.visible = false;
         });
     }
 
@@ -245,7 +245,7 @@ class Viewer {
         wrapCanvas.removeChild(this.renderer.domElement);
         this.cancelAnimation();
         this.transformControls.detach();
-        this.scene.remove(this.scene.getObjectByName("model3d"));
+        this.scene.remove(this.scene.getObjectByName("Model3D"));
         this.groupLightHelpers.children = [];
     }
 

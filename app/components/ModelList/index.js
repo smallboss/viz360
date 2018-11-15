@@ -211,8 +211,7 @@ class ModelList extends React.Component {
 
             this.loaderOBJ.load(modelFileUrl, (model) => {
 
-                this.firstTuningModel( model );
-                callback( model.toJSON() );
+                callback( this.firstTuningModel( model ).toJSON() );
 
             }, (progress) => {
                 console.log('progress', progress);
@@ -251,8 +250,7 @@ class ModelList extends React.Component {
         else {
             this.loaderFBX.load(modelFileUrl, (model) => {
 
-                this.firstTuningModel( model );
-                callback( model.toJSON() );
+                callback( this.firstTuningModel( model ).toJSON() );
 
             }, (progress) => {
                 console.log('progress', progress);
@@ -265,14 +263,22 @@ class ModelList extends React.Component {
 
     firstTuningModel( model ) {
 
+        const rotateWrap = new THREE.Object3D();
+        rotateWrap.name = "Wrap Rotate";
+        rotateWrap.rotateX(-Math.PI/2);
+        rotateWrap.updateMatrix();
+
+        const modelGroup = new THREE.Group();
+        modelGroup.name = "Model3D";
+        modelGroup.add(rotateWrap);
+
+        model.name = "MeshList";
+
         const b = new THREE.Box3().setFromObject( model );
         const ditance = 100/(b.min.distanceTo(b.max)/2);
-        // const ditance = 10;
-        console.log('DISTANCE: ', ditance);
+
 
         model.traverse( el => {
-
-            console.log('el ======================', el);
 
             if(el.material) {
                 if(el.material.length)  el.material.forEach( el => el.side=THREE.DoubleSide );
@@ -290,19 +296,30 @@ class ModelList extends React.Component {
                 // el.geometry.normalize();
                 el.geometry.scale(ditance, ditance, ditance);
                 el.geometry.needsUpdate = true;
+
+
+                const box = el.geometry.boundingBox;
+                const size = new THREE.Vector3();
+                box.getCenter(size);
+                el.geometry.translate(-size.x, -size.y, -size.z);
+                el.position.add(size);
+                el.geometry.needsUpdate = true;
             }
         });
 
+        rotateWrap.add(model);
 
         const ambientLight = new THREE.AmbientLight(0xffffff, .6);
         ambientLight.name = 'AmbientLight';
-        model.add(ambientLight);
+        modelGroup.add(ambientLight);
 
         const pointLight = new THREE.PointLight(0xffffff, 1.4, 300);
         pointLight.name = 'PointLight';
         pointLight.position.set(50, 120, 100);
         pointLight.updateMatrix();
-        model.add(pointLight);
+        modelGroup.add(pointLight);
+
+        return modelGroup;
     }
 
     onDrop( acceptedFiles ) {

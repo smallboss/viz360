@@ -490,7 +490,14 @@ class ModelEditor extends React.Component {
     addPonterLight() {
         const pointLight = new THREE.PointLight(0xffffff, 1.7, 800);
         pointLight.name = 'PointLight';
-        pointLight.position.set(0, 180, 0);
+
+        const posPointLight = {
+            x: Math.random()*(100+100+1)-100,
+            y: 120,
+            z: Math.random()*(100+100+1)-100,
+        };
+
+        pointLight.position.set(posPointLight.x, posPointLight.y, posPointLight.z);
 
         this.model.add(pointLight);
         Viewer.addLightHelper(pointLight);

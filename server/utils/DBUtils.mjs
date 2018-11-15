@@ -8,8 +8,8 @@ const Model3D = mongoose.model('Model3D');
 export function setUpConnection() {
     // mongoose.Promise = require('bluebird');
     // "apiPrefix": "http://104.248.125.47",
-    const db_path = `mongodb://sb:01286693q@ds259499.mlab.com:59499/viz360`;
-    // const db_path = `mongodb://${ServerConfig.db.host}:${ServerConfig.db.port}/${ServerConfig.db.name}`;
+    // const db_path = `mongodb://sb:01286693q@ds259499.mlab.com:59499/viz360`;
+    const db_path = `mongodb://${ServerConfig.db.host}:${ServerConfig.db.port}/${ServerConfig.db.name}`;
     mongoose.connect(db_path, { useNewUrlParser: true })
         .catch(err => {
             console.log(err.message);
