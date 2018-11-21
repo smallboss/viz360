@@ -75,6 +75,8 @@ class MegaSlider extends React.Component {
                     onChange={(event, value) => {
                         this.props.el[this.props.valName] = value;
                         this.forceUpdate();
+                        console.log('this.props', this.props);
+                        if(this.props.valName == 'fov') this.props.el.updateProjectionMatrix();
                     }}
                 />
             </div>
@@ -144,14 +146,12 @@ class ModelEditor extends React.Component {
 
                 this.model.traverse(el => {
                     if (el.type.includes('Light')) lightObjects.push(el);
-                    else if (el.type.includes('Mesh')) meshObjects.push(el)
-                });
+                    else if (el.type.includes('Mesh')) meshObjects.push(el);
 
-
-                this.model.traverse(el => {
                     if (el.type.includes('PointLight')) Viewer.addLightHelper(el);
                 });
 
+                Viewer.scene.background.setHex( model.userData.bg );
 
                 this.setState({
                     lightObjects: lightObjects,
@@ -313,6 +313,21 @@ class ModelEditor extends React.Component {
             )
         };
 
+        if (el.type.includes('Scene')) {
+            return (
+                <div key={el.uuid} className="wrap-stgs-item">
+                    {getColor(el, 'background')}
+                </div>
+            )
+        }
+
+        if (el.type.includes('Camera')) {
+            return (
+                <div key={el.uuid} className="wrap-stgs-item">
+                    {getSlider(el, 'fov', 10, 100)}
+                </div>
+            )
+        }
 
         if (el.type.includes('Light')) {
             return (
@@ -352,7 +367,7 @@ class ModelEditor extends React.Component {
                         {getTexture(el, 'aoMap')}
                         {getSlider(el, 'aoMapIntensity', 0, 1)}
                     </div>
-                )))
+                )));
 
                 return materialStgsArray;
             }
@@ -416,6 +431,7 @@ class ModelEditor extends React.Component {
             this.model.remove( this.model.getObjectByName('PerspectiveCamera') );
 
             this.model.children.push( Viewer.camera );
+            this.model.userData.bg = Viewer.scene.background;
             const modelJSON = this.model.toJSON();
             // modelJSON.cameraPos = Viewer.camera.position.toArray();
             const images = [];
@@ -591,6 +607,10 @@ class ModelEditor extends React.Component {
                             </form>
 
                             <div className="wrap-stgs-controls">
+                                { this.renderStgsItem( Viewer.camera ) }
+
+                                { this.renderStgsItem( Viewer.scene ) }
+
                                 {
                                     (this.state.lightObjects.length)
                                         ? this.state.lightObjects.map(el => this.renderStgsItem(el))

@@ -5,9 +5,10 @@ class Viewer {
         this.scene = new THREE.Scene();
         window.scene = this.scene;
         this.scene.background = new THREE.Color(0xf6f6f6);
+        // this.scene.background = new THREE.Color(0xff0000);
         // this.scene.fog = new THREE.Fog( 0xa0f0f0, 200, 1000 );
 
-        this.defaultCamera = new THREE.PerspectiveCamera(45, window.innerWidth * 0.9 / window.innerHeight * 0.9, 1, 100000);
+        this.defaultCamera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 100000);
         this.defaultCamera.name = "PerspectiveCamera";
         this.defaultCamera.position.set(100, 200, 300);
         this.camera = this.defaultCamera.clone();
@@ -30,9 +31,15 @@ class Viewer {
 
         this.renderer = new THREE.WebGLRenderer({antialias: true, preserveDrawingBuffer: true});
         // this.renderer.setSize(window.innerWidth * 0.9, window.innerHeight * 0.9);
-        this.renderer.setClearColor(0x000000, 1.0);
+        // this.renderer.setClearColor(0x000000, 1.0);
 
         this.orbitControls = new THREE.OrbitControls(this.defaultCamera.clone(), this.renderer.domElement);
+        this.orbitControls.screenSpacePanning = true;
+        this.orbitControls.enableDamping = true;
+        this.orbitControls.dampingFactor = 0.12;
+        this.orbitControls.panSpeed = .07;
+        this.orbitControls.rotateSpeed = .1;
+        console.log( this.orbitControls );
 
         this.transformControls = new THREE.TransformControls(this.camera, this.renderer.domElement);
         this.transformControls.name = 'TransformControls';
@@ -111,7 +118,6 @@ class Viewer {
 
     addModelToScene(model, viewType) {
         this.model = model;
-        // this.model.name = `model3d`;
 
         const modelCamera = this.model.getObjectByName('PerspectiveCamera');
         if(modelCamera) this.camera = modelCamera.clone();
@@ -203,6 +209,7 @@ class Viewer {
 
     animate() {
         TWEEN.update();
+        this.orbitControls.update();
         this.renderer.render(this.scene, this.camera);
         this.animationID = window.requestAnimationFrame(() => this.animate());
     }

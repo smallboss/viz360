@@ -270,6 +270,7 @@ class ModelList extends React.Component {
 
         const modelGroup = new THREE.Group();
         modelGroup.name = "Model3D";
+        modelGroup.userData.bg = 0xf6f6f6;
         modelGroup.add(rotateWrap);
 
         model.name = "MeshList";
