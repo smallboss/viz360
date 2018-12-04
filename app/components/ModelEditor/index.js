@@ -62,21 +62,26 @@ const styles = theme => ({
 
 class MegaSlider extends React.Component {
     render() {
-
-        const value = this.props.el[this.props.valName] ? this.props.el[this.props.valName] : 0;
+        const { el, valName, min, max } = this.props;
+        const value = el[valName] ? el[valName] : 0;
 
         return (
             <div className="setng-row">
-                <span className="stngs-name">{`${this.props.valName}:`}</span>
+                <span className="stngs-name">{`${valName}:`}</span>
                 <Slider
                     value={value}
-                    min={this.props.min}
-                    max={this.props.max}
+                    min={min}
+                    max={max}
                     onChange={(event, value) => {
-                        this.props.el[this.props.valName] = value;
+                        const diffFOV = el[valName] / value;
+                        el[valName] = value;
                         this.forceUpdate();
-                        console.log('this.props', this.props);
-                        if(this.props.valName == 'fov') this.props.el.updateProjectionMatrix();
+
+                        if(valName === 'fov') {
+                            el.position.multiplyScalar(diffFOV);
+                            el.updateProjectionMatrix();
+                            Viewer.scaleTransformControls();
+                        }
                     }}
                 />
             </div>
@@ -146,12 +151,13 @@ class ModelEditor extends React.Component {
 
                 this.model.traverse(el => {
                     if (el.type.includes('Light')) lightObjects.push(el);
-                    else if (el.type.includes('Mesh')) meshObjects.push(el);
+                    else if (el.type.includes('Mesh')) {
+                        // el.material = new THREE.MeshStandardMaterial();
+                        meshObjects.push(el);
+                    }
 
                     if (el.type.includes('PointLight')) Viewer.addLightHelper(el);
                 });
-
-                Viewer.scene.background.setHex( model.userData.bg );
 
                 this.setState({
                     lightObjects: lightObjects,
@@ -232,9 +238,33 @@ class ModelEditor extends React.Component {
                 imgArray.push( window.URL.createObjectURL(new Blob([file], {type: "octet/stream"})) );
             }
 
-            const textureCube = loader.load(imgArray, ()=>console.log('loaded ====================================='));
-            materialMap[valName] = textureCube;
-            textureCube.needsUpdate = true;
+            const textureCube = loader.load(imgArray);
+            const envMap = new THREE.TextureLoader().load( imgArray[0] );
+            // envMap.mapping = THREE.EquirectangularReflectionMapping;
+            envMap.mapping = THREE.SphericalReflectionMapping;
+
+
+
+            // new THREE.TextureLoader().load( imgArray[0], ( texture ) => {
+            //     texture.encoding = THREE.sRGBEncoding;
+            //     const cubemapGenerator = new THREE.EquirectangularToCubeGenerator( texture, { resolution: 512 } );
+            //     // pngBackground = cubemapGenerator.renderTarget;
+            //     const cubeMapTexture = cubemapGenerator.update( Viewer.renderer );
+            //     const pmremGenerator = new THREE.PMREMGenerator( cubeMapTexture );
+            //     pmremGenerator.update( Viewer.renderer );
+            //     const pmremCubeUVPacker = new THREE.PMREMCubeUVPacker( pmremGenerator.cubeLods );
+            //     pmremCubeUVPacker.update( Viewer.renderer );
+            //     const pngCubeRenderTarget = pmremCubeUVPacker.CubeUVRenderTarget;
+            //     materialMap[valName] = pngCubeRenderTarget.texture;
+            //     materialMap[valName].needsUpdate = true;
+            //     materialMap.needsUpdate = true;
+            //     // texture.dispose();
+            //     // pmremGenerator.dispose();
+            //     // pmremCubeUVPacker.dispose();
+            // });
+
+            materialMap[valName] = envMap;
+            materialMap[valName].needsUpdate = true;
             materialMap.needsUpdate = true;
             textureInput.parentElement.style['background-image'] = `url(${imgArray[0]})`;
         }
@@ -363,7 +393,6 @@ class ModelEditor extends React.Component {
                         {getTexture(el, 'specularMap')}
                         {getTexture(el, 'normalMap')}
                         {getTexture(el, 'envMap')}
-                        {getSlider(el, 'envMapIntensity', 0, 1)}
                         {getTexture(el, 'aoMap')}
                         {getSlider(el, 'aoMapIntensity', 0, 1)}
                     </div>
@@ -385,7 +414,6 @@ class ModelEditor extends React.Component {
                     {getTexture(el, 'specularMap')}
                     {getTexture(el, 'normalMap')}
                     {getTexture(el, 'envMap')}
-                    {getSlider(el.material, 'envMapIntensity', 0, 1)}
                     {getTexture(el, 'aoMap')}
                     {getSlider(el.material, 'aoMapIntensity', 0, 1)}
                 </div>

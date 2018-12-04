@@ -2,21 +2,14 @@ import TWEEN from '@tweenjs/tween.js';
 
 class Viewer {
     constructor() {
-        this.scene = new THREE.Scene();
-        window.scene = this.scene;
+        window.scene = this.scene = new THREE.Scene();
         this.scene.background = new THREE.Color(0xf6f6f6);
-        // this.scene.background = new THREE.Color(0xff0000);
-        // this.scene.fog = new THREE.Fog( 0xa0f0f0, 200, 1000 );
 
         this.defaultCamera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 100000);
         this.defaultCamera.name = "PerspectiveCamera";
         this.defaultCamera.position.set(100, 200, 300);
         this.camera = this.defaultCamera.clone();
-
         this.scene.add(this.camera);
-        // this.camera.name = "PerspectiveCamera";
-        // this.camera.position.set(100, 200, 300);
-        // this.scene.add(this.camera);
 
         // const grid = new THREE.GridHelper(2000, 20, 0x000000, 0x000000);
         // grid.name = "GridHelper";
@@ -39,7 +32,6 @@ class Viewer {
         this.orbitControls.dampingFactor = 0.12;
         this.orbitControls.panSpeed = .07;
         this.orbitControls.rotateSpeed = .1;
-        console.log( this.orbitControls );
 
         this.transformControls = new THREE.TransformControls(this.camera, this.renderer.domElement);
         this.transformControls.name = 'TransformControls';
@@ -60,12 +52,17 @@ class Viewer {
             this.orbitControls.enabled = !event.value;
         });
 
-        this.transformControls.addEventListener('change', () => this.controlsChaned = true);
+        this.transformControls.addEventListener('change', () => { this.controlsChaned = true; this.scaleTransformControls() });
         this.orbitControls.addEventListener('change', () => this.controlsChaned = true);
 
         document.addEventListener('mousedown', () => this.controlsChaned = false);
         document.addEventListener('mouseup', (event) => this.onMouseup(event));
         window.addEventListener('resize', () => this.updateDimensions());
+    }
+
+    scaleTransformControls(scaleVal) {
+        const newScaleVal = scaleVal ? scaleVal : this.camera.fov / 45;
+        this.transformControls.scale.set(newScaleVal, newScaleVal, newScaleVal);
     }
 
 
@@ -119,6 +116,8 @@ class Viewer {
     addModelToScene(model, viewType) {
         this.model = model;
 
+        this.scene.background.setHex( this.model.userData.bg );
+
         const modelCamera = this.model.getObjectByName('PerspectiveCamera');
         if(modelCamera) this.camera = modelCamera.clone();
         else {
@@ -167,15 +166,16 @@ class Viewer {
         const startCameraPos = this.camera.position.clone();
         const finishCameraPos = b.max.clone().multiplyScalar(6);
         finishCameraPos.setY( finishCameraPos.y/5 );
+        finishCameraPos.multiplyScalar(45 / this.camera.fov);
 
         new TWEEN.Tween({alpha: 0}).to({alpha: 1}, startCameraPos.distanceTo(finishCameraPos))
-            .onStart(()=> this.orbitControls.enabled = false )
+            .onStart( () => this.orbitControls.enabled = false )
             .onUpdate(({alpha}) => {
                 this.orbitControls.object.position.copy( startCameraPos.clone().lerp(finishCameraPos, alpha) );
                 this.orbitControls.object.lookAt(0, 0, 0);
                 this.orbitControls.update();
             })
-            .onComplete(()=> this.orbitControls.enabled = true )
+            .onComplete( () => this.orbitControls.enabled = true )
             .easing(TWEEN.Easing.Sinusoidal.Out)
             .start();
 
@@ -231,14 +231,12 @@ class Viewer {
 
     hideHelpElements() {
         this.transformControls.detach();
-        this.scene.children.forEach( el => {
-            if(!el.name.includes('Model3D') && !el.name.includes('Camera')) el.visible = false;
-        });
+        this.scene.getObjectByName('GroupLightHelpers').visible = false;
     }
 
     getPreviewImg() {
         const canvasImg = this.renderer.domElement.toDataURL('image/jpeg', 1.0);
-        setTimeout(()=>this.scene.children.forEach( el => el.visible = true), 1);
+        setTimeout(()=>this.scene.getObjectByName('GroupLightHelpers').visible = true, 1);
 
         return canvasImg;
     }
