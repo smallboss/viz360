@@ -238,12 +238,8 @@ class ModelEditor extends React.Component {
                 imgArray.push( window.URL.createObjectURL(new Blob([file], {type: "octet/stream"})) );
             }
 
-            const textureCube = loader.load(imgArray);
             const envMap = new THREE.TextureLoader().load( imgArray[0] );
-            // envMap.mapping = THREE.EquirectangularReflectionMapping;
             envMap.mapping = THREE.SphericalReflectionMapping;
-
-
 
             // new THREE.TextureLoader().load( imgArray[0], ( texture ) => {
             //     texture.encoding = THREE.sRGBEncoding;
@@ -393,12 +389,14 @@ class ModelEditor extends React.Component {
                         {getTexture(el, 'specularMap')}
                         {getTexture(el, 'normalMap')}
                         {getTexture(el, 'envMap')}
+                        {getSlider(el, 'reflectivity', 0, 1)}
                         {getTexture(el, 'aoMap')}
                         {getSlider(el, 'aoMapIntensity', 0, 1)}
                     </div>
                 )));
 
                 return materialStgsArray;
+
             }
 
             return (
@@ -410,11 +408,12 @@ class ModelEditor extends React.Component {
                     {getColor(el.material, 'emissive')}
                     {getColor(el.material, 'specular')}
                     {getSlider(el.material, 'shininess', 0, 100)}
-                    {getTexture(el, 'map')}
-                    {getTexture(el, 'specularMap')}
-                    {getTexture(el, 'normalMap')}
-                    {getTexture(el, 'envMap')}
-                    {getTexture(el, 'aoMap')}
+                    {getTexture(el.material, 'map')}
+                    {getTexture(el.material, 'specularMap')}
+                    {getTexture(el.material, 'normalMap')}
+                    {getTexture(el.material, 'envMap')}
+                    {getSlider(el.material, 'reflectivity', 0, 1)}
+                    {getTexture(el.material, 'aoMap')}
                     {getSlider(el.material, 'aoMapIntensity', 0, 1)}
                 </div>
             )

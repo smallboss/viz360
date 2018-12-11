@@ -282,8 +282,13 @@ class ModelList extends React.Component {
         model.traverse( el => {
 
             if(el.material) {
-                if(el.material.length)  el.material.forEach( el => el.side=THREE.DoubleSide );
-                else el.material.side=THREE.DoubleSide;
+
+                if(el.material.length) {
+                    el.material.forEach( material => material.side = THREE.DoubleSide );
+                }
+                else {
+                    el.material.side = THREE.DoubleSide;
+                }
             }
 
             if(el.geometry) {
@@ -294,7 +299,6 @@ class ModelList extends React.Component {
                 }
 
                 el.geometry.computeBoundingBox();
-                // el.geometry.normalize();
                 el.geometry.scale(ditance, ditance, ditance);
                 el.geometry.needsUpdate = true;
 
