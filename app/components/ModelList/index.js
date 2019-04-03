@@ -292,23 +292,23 @@ class ModelList extends React.Component {
             }
 
             if(el.geometry) {
-                if(el.geometry.isBufferGeometry) {
-                    const geometry = new THREE.Geometry();
-                    geometry.fromBufferGeometry(el.geometry);
-                    el.geometry = geometry;
-                }
-
-                el.geometry.computeBoundingBox();
-                el.geometry.scale(ditance, ditance, ditance);
-                el.geometry.needsUpdate = true;
-
-
-                const box = el.geometry.boundingBox;
-                const size = new THREE.Vector3();
-                box.getCenter(size);
-                el.geometry.translate(-size.x, -size.y, -size.z);
-                el.position.add(size);
-                el.geometry.needsUpdate = true;
+                // if(el.geometry.isBufferGeometry) {
+                //     const geometry = new THREE.Geometry();
+                //     geometry.fromBufferGeometry(el.geometry);
+                //     el.geometry = geometry;
+                // }
+                //
+                // el.geometry.computeBoundingBox();
+                // el.geometry.scale(ditance, ditance, ditance);
+                // el.geometry.needsUpdate = true;
+                //
+                //
+                // const box = el.geometry.boundingBox;
+                // const size = new THREE.Vector3();
+                // box.getCenter(size);
+                // el.geometry.translate(-size.x, -size.y, -size.z);
+                // el.position.add(size);
+                // el.geometry.needsUpdate = true;
             }
         });
 
