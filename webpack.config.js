@@ -6,6 +6,8 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const OpenBrowserPlugin = require('open-browser-webpack-plugin');
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin');
 
+const serverPort = 8070;
+
 const config = {
     stats: {
         maxModules: 0
@@ -15,7 +17,7 @@ const config = {
 
     entry: [
         'react-hot-loader/patch',
-        'webpack-dev-server/client?http://0.0.0.0:8080',
+        'webpack-dev-server/client?http://0.0.0.0:' + serverPort,
         'webpack/hot/only-dev-server',
         './main.js',
         './assets/scss/main.scss',
@@ -33,13 +35,13 @@ const config = {
         headers: {
             'Access-Control-Allow-Origin': '*'
         },
-        host: '104.248.125.47',
+        host: '3.121.157.52',
         // host: '0.0.0.0',
         hot: true,
         contentBase: resolve(__dirname, 'build'),
         historyApiFallback: true,
         publicPath: '/',
-        port: 8080
+        port: serverPort
     },
 
     resolve: {

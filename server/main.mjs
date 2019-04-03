@@ -76,7 +76,7 @@ app.post('/removeModel', (req, res) => {
 app.post('/uploadModel', (req, res) => {
     console.dir('-----------------/uploadModel/-------------------' + JSON.parse(req.body.model).name);
 
-    if (Object.keys(req.files).length == 0) {
+    if (Object.keys(req.files).length === 0) {
         return res.status(400).send('No files were uploaded.');
     }
 
@@ -130,7 +130,7 @@ app.post('/uploadModel', (req, res) => {
 app.post('/saveModel', (req, res) => {
     console.dir('-----------------/saveModel/-------------------');
 
-    if (Object.keys(req.files).length == 0) {
+    if (Object.keys(req.files).length === 0) {
         return res.status(400).send('No files were uploaded.');
     }
 
