@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "server": "node --experimental-modules ./server/main.mjs",
+    "server_getfront": "node ./server/getFront.js",
     "db": "mongod",
     "backend": "mongod & node --experimental-modules ./server/main.mjs",
     "start_do": "node --experimental-modules ./server/main.mjs & webpack-dev-server",

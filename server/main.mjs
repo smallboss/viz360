@@ -8,6 +8,7 @@ import fs from 'fs-extra';
 import ServerConfig from '../config/config.json';
 import * as db from './utils/DBUtils';
 
+const __dirname = path.resolve(path.dirname('') + '/server');
 
 db.setUpConnection();
 
@@ -19,6 +20,18 @@ app.use(ServerConfig.model3DStore, express.static( path.resolve(path.dirname('')
 app.use(fileUpload({
     limits: { fileSize: 50 * 1024 * 1024 },
 }));
+
+app.use(express.static(__dirname + '/front'));
+app.use('/', function (req, res) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
+    res.header("Access-Control-Allow-Headers", "X-Requested-With,content-type, Authorization");
+
+    res.contentType("text/html; charset=utf-8");
+
+    res.sendFile(path.join(__dirname+'/front/index.html'));
+
+});
 
 const modelStorePath = path.dirname('')+ServerConfig.model3DStore;
 
