@@ -22,7 +22,7 @@ app.use(fileUpload({
 }));
 
 app.use(express.static(__dirname + '/front'));
-app.use('/', function (req, res) {
+app.get('/', function (req, res) {
     res.header("Access-Control-Allow-Origin", "*");
     res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
     res.header("Access-Control-Allow-Headers", "X-Requested-With,content-type, Authorization");
