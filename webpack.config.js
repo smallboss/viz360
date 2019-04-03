@@ -35,7 +35,7 @@ const config = {
         headers: {
             'Access-Control-Allow-Origin': '*'
         },
-        host: '3.121.157.52',
+        host: '54.93.252.93',
         // host: '0.0.0.0',
         hot: true,
         contentBase: resolve(__dirname, 'build'),

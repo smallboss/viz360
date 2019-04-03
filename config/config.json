@@ -1,5 +1,5 @@
 {
-  "apiPrefix": "http://3.121.157.52",
+  "apiPrefix": "http://54.93.252.93",
   "apiPrefixLOCAL": "http://localhost",
   "serverPort": "3010",
   "getChannel": "channel",
