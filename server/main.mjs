@@ -22,16 +22,6 @@ app.use(fileUpload({
 }));
 
 app.use(express.static(__dirname + '/front'));
-app.get('/', function (req, res) {
-    res.header("Access-Control-Allow-Origin", "*");
-    res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
-    res.header("Access-Control-Allow-Headers", "X-Requested-With,content-type, Authorization");
-
-    res.contentType("text/html; charset=utf-8");
-
-    res.sendFile(path.join(__dirname+'/front/index.html'));
-
-});
 
 const modelStorePath = path.dirname('')+ServerConfig.model3DStore;
 
@@ -43,14 +33,26 @@ const modelStorePath = path.dirname('')+ServerConfig.model3DStore;
 // });
 
 
-
+// app.post('/admin_panel', (req, res) => {
+//     console.dir('-----------------/admin_panel get/-------------------');
+//
+//     db.getModel3DList()
+//         .then(result => res.send(result));
+// });
 
 app.post('/admin_panel', (req, res) => {
-    console.dir('-----------------/admin_panel/-------------------');
+    console.dir('-----------------/admin_panel post/-------------------');
 
     db.getModel3DList()
         .then(result => res.send(result));
 });
+//
+// app.use('/admin_panel', (req, res) => {
+//     console.dir('-----------------/admin_panel use/-------------------');
+//
+//     db.getModel3DList()
+//         .then(result => res.send(result));
+// });
 
 
 app.post('/getModel', (req, res) => {
@@ -172,7 +174,16 @@ app.post('/saveModel', (req, res) => {
     });
 });
 
+app.get('*', function (req, res) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
+    res.header("Access-Control-Allow-Headers", "X-Requested-With,content-type, Authorization");
 
+    res.contentType("text/html; charset=utf-8");
+
+    res.sendFile(path.join(__dirname+'/front/index.html'));
+
+});
 
 app.listen(ServerConfig.serverPort, () => {
     console.log(`app listening on port ${ServerConfig.serverPort}!`);
